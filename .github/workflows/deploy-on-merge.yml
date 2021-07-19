@@ -20,13 +20,13 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-2
-      - name: Build File
+      - name: Build
         run: ./gradlew clean build -x test
       - name: Build Zip
         run: ./gradlew buildZip
-      - name: Copy test build to S3
+      - name: Copy live ZIP to S3
         run: |
-          aws s3 cp build/distributions/accounts.zip s3://mcc-accounts-deployment/test-accounts.zip
+          aws s3 cp build/distributions/accounts.zip s3://mcc-accounts-deployment/live-accounts.zip
       - name: Deploy bootstrap Terraform
         working-directory: terraform/bootstrap
         env:
@@ -46,6 +46,6 @@ jobs:
           mv live-mappings.tfvars live-mappings.auto.tfvars
           terraform init -input=false \
             -backend-config "token=${TF_TOKEN}" \
-            -backend-config "workspaces.name=accounts-live"
+            -backend-config "name=accounts-live"
 
           terraform apply -auto-approve
