@@ -1,0 +1,12 @@
+{
+  "library": "jersey2",
+  "modelPackage": "cricket.merstham.website.accounts.sage.model",
+  "apiPackage": "cricket.merstham.website.accounts.sage.api",
+  "invokerPackage": "cricket.merstham.website.accounts.sage",
+  "skipDefaultInterface": true,
+  "interfaceOnly": true,
+  "implicitHeaders": true,
+  "dateLibrary": "java8",
+  "java8": true,
+  "swaggerAnnotations": true
+}

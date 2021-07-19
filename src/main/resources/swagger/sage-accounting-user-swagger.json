@@ -1,0 +1,456 @@
+{
+  "info": {
+    "title": "Sage Accounting API - User Accounts",
+    "description": "Documentation of the Sage Business Cloud Accounting API.",
+    "contact": {
+      "name": "Sage Business Cloud Accounting API Team",
+      "url": "mailto:sageonedevelopers@sage.com"
+    },
+    "version": "3.1"
+  },
+  "swagger": "2.0",
+  "produces": [
+    "application/json"
+  ],
+  "host": "api.accounting.sage.com",
+  "basePath": "/v3.1",
+  "schemes": [
+    "https"
+  ],
+  "securityDefinitions": {
+    "oauth": {
+      "type": "oauth2",
+      "authorizationUrl": "https://www.sageone.com/oauth2/auth/central",
+      "flow": "accessCode",
+      "scopes": {
+        "full_access": "Full Read/Write Access",
+        "readonly": "Read Only Access"
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "Businesses",
+      "description": "This endpoint holds information about all the businesses the authorized user has access to."
+    },
+    {
+      "name": "User",
+      "description": "This endpoint holds information about the currently authenticated user."
+    }
+  ],
+  "paths": {
+    "/businesses": {
+      "get": {
+        "description": "Returns all Businesses",
+        "produces": [
+          "application/json"
+        ],
+        "security": [
+          {
+            "oauth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns all Businesses",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Business"
+              }
+            }
+          }
+        },
+        "tags": [
+          "Businesses"
+        ]
+      }
+    },
+    "/businesses/{key}": {
+      "get": {
+        "description": "Returns a Business",
+        "produces": [
+          "application/json"
+        ],
+        "security": [
+          {
+            "oauth": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "type": "string",
+            "required": true,
+            "description": "The ID of the business. Use `lead` to get your lead business."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns a Business",
+            "schema": {
+              "$ref": "#/definitions/Business"
+            }
+          }
+        },
+        "tags": [
+          "Businesses"
+        ]
+      },
+      "put": {
+        "description": "Updates a Business",
+        "produces": [
+          "application/json"
+        ],
+        "security": [
+          {
+            "oauth": []
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "type": "string",
+            "required": true
+          },
+          {
+            "name": "Businesses",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/putBusinesses"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updates a Business",
+            "schema": {
+              "$ref": "#/definitions/Business"
+            }
+          }
+        },
+        "tags": [
+          "Businesses"
+        ]
+      }
+    },
+    "/user": {
+      "get": {
+        "description": "Returns the User",
+        "produces": [
+          "application/json"
+        ],
+        "security": [
+          {
+            "oauth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the User",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        },
+        "tags": [
+          "User"
+        ]
+      },
+      "put": {
+        "description": "Updates the User",
+        "produces": [
+          "application/json"
+        ],
+        "security": [
+          {
+            "oauth": []
+          }
+        ],
+        "consumes": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "User",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/putUser"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Updates the User",
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        },
+        "tags": [
+          "User"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "putBusinesses": {
+      "type": "object",
+      "properties": {
+        "business": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "description": "The name of the business"
+            },
+            "address_line_1": {
+              "type": "string",
+              "description": "The first line of the business address"
+            },
+            "address_line_2": {
+              "type": "string",
+              "description": "The second line of the business address"
+            },
+            "city": {
+              "type": "string",
+              "description": "The business address town/city"
+            },
+            "region": {
+              "type": "string",
+              "description": "The business address state/province/region"
+            },
+            "postal_code": {
+              "type": "string",
+              "description": "The business address postal code/zipcode"
+            },
+            "telephone": {
+              "type": "string",
+              "description": "The telephone of the business"
+            },
+            "mobile": {
+              "type": "string",
+              "description": "The mobile of the business"
+            },
+            "website": {
+              "type": "string",
+              "description": "The website of the business"
+            }
+          }
+        }
+      },
+      "description": "Updates a Business"
+    },
+    "Business": {
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The datetime when the item was created"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The datetime when the item was last updated"
+        },
+        "displayed_as": {
+          "type": "string",
+          "description": "Display text for the item"
+        },
+        "id": {
+          "type": "string",
+          "description": "The unique identifier for the business"
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the business"
+        },
+        "address_line_1": {
+          "type": "string",
+          "description": "The first line of the business address"
+        },
+        "address_line_2": {
+          "type": "string",
+          "description": "The first line of the business address"
+        },
+        "city": {
+          "type": "string",
+          "description": "The business address town/city"
+        },
+        "postal_code": {
+          "type": "string",
+          "description": "The business address postal code/zipcode"
+        },
+        "country": {
+          "$ref": "#/definitions/Country",
+          "description": "The business address country"
+        },
+        "region": {
+          "type": "string",
+          "description": "The business address state/province/region"
+        },
+        "telephone": {
+          "type": "string",
+          "description": "The telephone of the business"
+        },
+        "mobile": {
+          "type": "string",
+          "description": "The mobile of the business"
+        },
+        "website": {
+          "type": "string",
+          "description": "The website of the business"
+        },
+        "is_demo": {
+          "type": "boolean",
+          "description": "Indicates whether the business is for demo purposes"
+        },
+        "ni_based": {
+          "type": "boolean",
+          "description": "Identifies a business as being based in Northern Ireland.\n                  <br><i>only applicable to UK business</i>"
+        },
+        "subscriptions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Subscription"
+          },
+          "description": "The business subscriptions"
+        }
+      },
+      "description": "Returns all Businesses"
+    },
+    "Country": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "The unique identifier for the country"
+        },
+        "displayed_as": {
+          "type": "string",
+          "description": "Display text for the country"
+        }
+      }
+    },
+    "Subscription": {
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The datetime when the item was created"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The datetime when the item was last updated"
+        },
+        "displayed_as": {
+          "type": "string",
+          "description": "Display text for the item"
+        },
+        "id": {
+          "type": "string",
+          "description": "The unique identifier for the subscription"
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Indicates whether the subscription is active"
+        },
+        "status": {
+          "type": "string"
+        }
+      }
+    },
+    "putUser": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "type": "object",
+          "properties": {
+            "first_name": {
+              "type": "string",
+              "description": "The first name of the user"
+            },
+            "last_name": {
+              "type": "string",
+              "description": "The last name of the user"
+            },
+            "initials": {
+              "type": "string",
+              "description": "The initials of the use"
+            },
+            "locale": {
+              "type": "string",
+              "description": "The locale of the user",
+              "enum": [
+                "en-GB",
+                "en-IE",
+                "en-US",
+                "es-US",
+                "en-CA",
+                "fr-CA",
+                "fr-FR",
+                "de-DE",
+                "es-ES"
+              ]
+            }
+          }
+        }
+      },
+      "description": "Updates the User"
+    },
+    "User": {
+      "type": "object",
+      "properties": {
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The datetime when the item was created"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The datetime when the item was last updated"
+        },
+        "displayed_as": {
+          "type": "string",
+          "description": "Display text for the item"
+        },
+        "id": {
+          "type": "string",
+          "description": "The unique identifier for the user"
+        },
+        "first_name": {
+          "type": "string",
+          "description": "The first name of the user"
+        },
+        "last_name": {
+          "type": "string",
+          "description": "The last name of the user"
+        },
+        "initials": {
+          "type": "string",
+          "description": "The initials of the user"
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the user"
+        },
+        "locale": {
+          "type": "string",
+          "description": "The locale of the user"
+        }
+      },
+      "description": "Returns the User"
+    }
+  }
+},
