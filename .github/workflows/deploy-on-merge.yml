@@ -45,7 +45,7 @@ jobs:
           mv test-mappings.auto.tfvars test-mappings.tfvars
           mv live-mappings.tfvars live-mappings.auto.tfvars
           terraform init -input=false \
-            -backend-config "token=${TF_TOKEN}" \
-            -backend-config "name=accounts-live"
+            -backend-config=live-backend.hcl \
+            -backend-config "token=${TF_TOKEN}"
 
           terraform apply -auto-approve
