@@ -1,0 +1,51 @@
+name: Deploy Docs to PaaS on PR merge
+on:
+  push:
+    branches:
+      - main
+jobs:
+  deploy-live-environment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+      - name: Build File
+        run: ./gradlew clean build -x test
+      - name: Build Zip
+        run: ./gradlew buildZip
+      - name: Copy test build to S3
+        run: |
+          aws s3 cp build/distributions/accounts.zip s3://mcc-accounts-deployment/test-accounts.zip
+      - name: Deploy bootstrap Terraform
+        working-directory: terraform/bootstrap
+        env:
+          TF_TOKEN: ${{ secrets.TF_TOKEN }}
+        run: |
+          terraform init -input=false \
+            -backend-config "token=${TF_TOKEN}"
+
+          terraform apply -auto-approve
+
+      - name: Deploy live build to AWS
+        working-directory: terraform/environment
+        env:
+          TF_TOKEN: ${{ secrets.TF_TOKEN }}
+        run: |
+          mv test-mappings.auto.tfvars test-mappings.tfvars
+          mv live-mappings.tfvars live-mappings.auto.tfvars
+          terraform init -input=false \
+            -backend-config "token=${TF_TOKEN}" \
+            -backend-config "workspaces.name=accounts-live"
+
+          terraform apply -auto-approve
