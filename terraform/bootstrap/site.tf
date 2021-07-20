@@ -16,6 +16,11 @@ terraform {
       source  = "digitalocean/digitalocean"
       version = "2.10.1"
     }
+
+    tfe = {
+      source  = "hashicorp/tfe"
+      version = "0.25.3"
+    }
   }
 
   required_version = "1.0.2"
@@ -29,4 +34,8 @@ provider "aws" {
 
 provider "digitalocean" {
   token = var.digitalocean_token
+}
+
+provider "tfe" {
+  token = var.terraform_token
 }
