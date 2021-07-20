@@ -14,7 +14,7 @@ module "sage_callback_endpoint" {
   handler_function_name = "cricket.merstham.website.accounts.lambda.SageCallback::handleRequest"
   lambda_role_arn       = aws_iam_role.lambda_iam_role.arn
   handler_environment_variables = {
-    CONFIG_NAME = "test"
+    CONFIG_NAME = var.environment_name
     BASE_URL    = "https://${aws_api_gateway_domain_name.api.domain_name}"
   }
 }
