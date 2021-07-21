@@ -15,9 +15,12 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 
+import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import static java.text.MessageFormat.format;
+import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 
 public class EndOfDay
         implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
@@ -27,6 +30,7 @@ public class EndOfDay
     private final ApiConfiguration apiConfiguration;
     private final SerializationService serializationService;
     private final SqsClient sqsClient;
+    private final ConfigurationService configurationService;
 
     public EndOfDay() {
         ConfigurationService configurationService = new ConfigurationService();
@@ -37,11 +41,48 @@ public class EndOfDay
         this.serializationService = new SerializationService();
         this.sqsClient =
                 SqsClient.builder().region(Region.of(configurationService.getAwsRegion())).build();
+        this.configurationService = new ConfigurationService();
     }
 
     @Override
     public APIGatewayProxyResponseEvent handleRequest(
             APIGatewayProxyRequestEvent input, Context context) {
+        if (!("EndOfDay".equals(input.getHeaders().get("Epos-Object"))
+                && "Create".equals(input.getHeaders().get("Epos-Action")))) {
+            LOG.error(
+                    "Request {} has invalid Epos action headers.",
+                    input.getRequestContext().getRequestId());
+            return new APIGatewayProxyResponseEvent()
+                    .withStatusCode(401)
+                    .withBody(
+                            serializationService.serialise(
+                                    new ApiResponse()
+                                            .setId(input.getRequestContext().getRequestId())
+                                            .setCode(401)
+                                            .setMessage("Unauthorised")));
+        }
+
+        Optional<String> authorisation = configurationService.getEndOfDayAuth();
+
+        if (authorisation.isPresent()) {
+            String suppliedAuth = input.getHeaders().get(AUTHORIZATION);
+            LOG.info(suppliedAuth);
+
+            if (Objects.isNull(suppliedAuth)
+                    || !"Basic ".concat(authorisation.get()).equals(suppliedAuth)) {
+                LOG.error(
+                        "Request {} has incorrect credentials.",
+                        input.getRequestContext().getRequestId());
+                return new APIGatewayProxyResponseEvent()
+                        .withStatusCode(401)
+                        .withBody(
+                                serializationService.serialise(
+                                        new ApiResponse()
+                                                .setId(input.getRequestContext().getRequestId())
+                                                .setCode(401)
+                                                .setMessage("Unauthorised")));
+            }
+        }
 
         LOG.info(
                 "Starting request {} - Request Body = {}",

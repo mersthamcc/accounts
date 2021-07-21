@@ -1,3 +1,15 @@
+resource "random_password" "end_of_day_username" {
+  length  = 32
+  special = false
+  number  = false
+}
+
+resource "random_password" "end_of_day_password" {
+  length  = 32
+  special = false
+  number  = false
+}
+
 module "end_of_day_endpoint" {
   source = "./modules/endpoint-lambda"
 
@@ -15,6 +27,11 @@ module "end_of_day_endpoint" {
   lambda_role_arn       = aws_iam_role.end_of_day_lambda_iam_role.arn
   handler_environment_variables = {
     CONFIG_NAME = var.environment_name
+    END_OF_DAY_AUTH = base64encode(join(":", [
+        random_password.end_of_day_username.result,
+        random_password.end_of_day_password.result
+      ]
+    ))
   }
 }
 
