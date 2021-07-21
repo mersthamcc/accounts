@@ -28,8 +28,8 @@ module "end_of_day_endpoint" {
   handler_environment_variables = {
     CONFIG_NAME = var.environment_name
     END_OF_DAY_AUTH = base64encode(join(":", [
-        random_password.end_of_day_username.result,
-        random_password.end_of_day_password.result
+      random_password.end_of_day_username.result,
+      random_password.end_of_day_password.result
       ]
     ))
   }
