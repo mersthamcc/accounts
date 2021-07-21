@@ -1,6 +1,7 @@
 package cricket.merstham.website.accounts.model;
 
 import com.amazonaws.services.dynamodbv2.datamodeling.*;
+import cricket.merstham.website.accounts.helpers.LocalDateTimeConverter;
 
 import java.time.LocalDateTime;
 
@@ -75,18 +76,5 @@ public class TokenStore {
     public TokenStore setRefreshTokenExpiry(LocalDateTime refreshTokenExpiry) {
         this.refreshTokenExpiry = refreshTokenExpiry;
         return this;
-    }
-
-    public static class LocalDateTimeConverter
-            implements DynamoDBTypeConverter<String, LocalDateTime> {
-        @Override
-        public String convert(final LocalDateTime time) {
-            return time.toString();
-        }
-
-        @Override
-        public LocalDateTime unconvert(final String stringValue) {
-            return LocalDateTime.parse(stringValue);
-        }
     }
 }

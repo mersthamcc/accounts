@@ -1,5 +1,7 @@
 package cricket.merstham.website.accounts.services;
 
+import java.util.Optional;
+
 public class ConfigurationService {
 
     public String getAwsRegion() {
@@ -12,5 +14,9 @@ public class ConfigurationService {
 
     public String getBaseUrl() {
         return System.getenv().getOrDefault("BASE_URL", "http://localhost:8085");
+    }
+
+    public Optional<String> getEndOfDayAuth() {
+        return Optional.ofNullable(System.getenv().get("END_OF_DAY_AUTH"));
     }
 }
