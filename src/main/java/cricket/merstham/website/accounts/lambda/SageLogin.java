@@ -30,7 +30,8 @@ public class SageLogin
                                 new EposNowService(
                                         new EposNowApiClient(
                                                 dynamoService.getConfig().getApiConfiguration())),
-                                dynamoService));
+                                dynamoService),
+                        dynamoService);
     }
 
     @Override

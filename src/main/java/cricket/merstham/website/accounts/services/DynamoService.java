@@ -5,14 +5,15 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig;
 import cricket.merstham.website.accounts.configuration.Configuration;
+import cricket.merstham.website.accounts.model.Audit;
 import cricket.merstham.website.accounts.model.TokenStore;
 
 public class DynamoService {
 
     private final ConfigurationService configurationService;
     private final AmazonDynamoDB dynamoDB;
-    private final DynamoDBMapperConfig mapperConfig;
     private final DynamoDBMapper mapper;
+    private final DynamoDBMapper instanceMapper;
 
     public DynamoService(ConfigurationService configurationService) {
         this.configurationService = configurationService;
@@ -21,8 +22,17 @@ public class DynamoService {
                         .withRegion(configurationService.getAwsRegion())
                         .build();
 
-        this.mapperConfig = new DynamoDBMapperConfig.Builder().build();
-        this.mapper = new DynamoDBMapper(dynamoDB, mapperConfig);
+        this.mapper = new DynamoDBMapper(dynamoDB, new DynamoDBMapperConfig.Builder().build());
+        this.instanceMapper =
+                new DynamoDBMapper(
+                        dynamoDB,
+                        new DynamoDBMapperConfig.Builder()
+                                .withTableNameOverride(
+                                        DynamoDBMapperConfig.TableNameOverride.withTableNamePrefix(
+                                                configurationService
+                                                        .getConfigurationName()
+                                                        .concat("-")))
+                                .build());
     }
 
     public Configuration getConfig() {
@@ -38,5 +48,9 @@ public class DynamoService {
         mapper.save(tokenStore);
 
         return tokenStore;
+    }
+
+    public void writeAuditLog(Audit audit) {
+        instanceMapper.save(audit);
     }
 }

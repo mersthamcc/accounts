@@ -36,7 +36,8 @@ public class ProcessTransactions implements RequestHandler<SQSEvent, Void> {
                         configuration,
                         configurationService,
                         new TokenManager(dynamoService),
-                        new MappingService(configurationService, eposNowService, dynamoService));
+                        new MappingService(configurationService, eposNowService, dynamoService),
+                        dynamoService);
         this.serializationService = new SerializationService();
         this.sqsClient =
                 SqsClient.builder().region(Region.of(configurationService.getAwsRegion())).build();

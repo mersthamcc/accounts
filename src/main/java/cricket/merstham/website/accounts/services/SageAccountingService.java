@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import cricket.merstham.website.accounts.configuration.ApiConfiguration;
 import cricket.merstham.website.accounts.configuration.Configuration;
+import cricket.merstham.website.accounts.model.Audit;
 import cricket.merstham.website.accounts.model.EposNowTransaction;
 import cricket.merstham.website.accounts.sage.ApiClient;
 import cricket.merstham.website.accounts.sage.api.ContactPaymentsApi;
@@ -36,16 +37,19 @@ public class SageAccountingService {
     private final TokenManager tokenManager;
     private final SerializationService serializationService;
     private final MappingService mappingService;
+    private final DynamoService dynamoService;
 
     public SageAccountingService(
             Configuration configuration,
             ConfigurationService configurationService,
             TokenManager tokenManager,
-            MappingService mappingService) {
+            MappingService mappingService,
+            DynamoService dynamoService) {
         this.apiConfiguration = configuration.getApiConfiguration();
         this.configurationService = configurationService;
         this.tokenManager = tokenManager;
         this.mappingService = mappingService;
+        this.dynamoService = dynamoService;
         this.serializationService = new SerializationService();
     }
 
@@ -84,9 +88,20 @@ public class SageAccountingService {
             PostSalesCreditNotesSalesCreditNote creditNoteRequest =
                     mappingService.creditNoteFromEposTransaction(transaction);
 
+            Audit audit =
+                    new Audit()
+                            .setBarcode(transaction.getBarcode())
+                            .setDateTransferred(LocalDateTime.now());
+
             var creditNote =
                     creditNotesApi.postSalesCreditNotes(
                             new PostSalesCreditNotes().salesCreditNote(creditNoteRequest));
+
+            dynamoService.writeAuditLog(
+                    audit.setSageReference(creditNote.getDisplayedAs())
+                            .setSageCustomerId(creditNote.getContact().getId())
+                            .setSageCustomerName(creditNote.getContactName())
+                            .setSageDocumentType("Credit Notes"));
 
             if (transaction.getTenders() == null) {
                 LOG.info(
@@ -100,14 +115,19 @@ public class SageAccountingService {
             PostContactPaymentsContactPayment payment =
                     mappingService.refundForEposTransaction(transaction, creditNote);
 
-            paymentsApi.postContactPayments(new PostContactPayments().contactPayment(payment));
+            ContactPayment contactPayment =
+                    paymentsApi.postContactPayments(
+                            new PostContactPayments().contactPayment(payment));
             LOG.info(
-                    "Created {} for transaction {} with payment of £{} in {} on {}",
+                    "Created {} for transaction {} with payment ({}) of £{} in {} on {}",
                     creditNote.getDisplayedAs(),
                     transaction.getBarcode(),
+                    contactPayment.getId(),
                     transaction.getTotalAmount().setScale(2),
                     payment.getBankAccountId(),
                     creditNote.getDate());
+
+            dynamoService.writeAuditLog(audit.setSagePaymentId(contactPayment.getId()));
             return true;
         } catch (cricket.merstham.website.accounts.sage.ApiException e) {
             LOG.error(
@@ -137,10 +157,19 @@ public class SageAccountingService {
         try {
             PostSalesInvoicesSalesInvoice salesInvoices =
                     mappingService.salesInvoiceFromEposTransaction(transaction);
+            Audit audit =
+                    new Audit()
+                            .setBarcode(transaction.getBarcode())
+                            .setDateTransferred(LocalDateTime.now());
 
             var salesInvoice =
                     salesInvoicesApi.postSalesInvoices(
                             new PostSalesInvoices().salesInvoice(salesInvoices));
+            dynamoService.writeAuditLog(
+                    audit.setSageReference(salesInvoice.getDisplayedAs())
+                            .setSageCustomerId(salesInvoice.getContact().getId())
+                            .setSageCustomerName(salesInvoice.getContactName())
+                            .setSageDocumentType("Sales Invoice"));
 
             if (transaction.getTenders() == null) {
                 LOG.info(
@@ -154,14 +183,18 @@ public class SageAccountingService {
             PostContactPaymentsContactPayment payment =
                     mappingService.paymentForEposTransaction(transaction, salesInvoice);
 
-            paymentsApi.postContactPayments(new PostContactPayments().contactPayment(payment));
+            ContactPayment contactPayment =
+                    paymentsApi.postContactPayments(
+                            new PostContactPayments().contactPayment(payment));
             LOG.info(
-                    "Created {} for transaction {} with payment of £{} in {} on {}",
+                    "Created {} for transaction {} with payment ({}) of £{} in {} on {}",
                     salesInvoice.getDisplayedAs(),
                     transaction.getBarcode(),
+                    contactPayment.getId(),
                     transaction.getTotalAmount().setScale(2),
                     payment.getBankAccountId(),
                     salesInvoice.getDate());
+            dynamoService.writeAuditLog(audit.setSagePaymentId(contactPayment.getId()));
             return true;
         } catch (cricket.merstham.website.accounts.sage.ApiException e) {
             LOG.error("Error creating Sage invoice for transaction {}", transaction.getBarcode());
