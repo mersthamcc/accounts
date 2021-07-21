@@ -85,6 +85,12 @@ resource "aws_lambda_function" "process_transactions_sqs_lambda" {
   memory_size   = 512
   runtime       = "java11"
 
+  environment {
+    variables = {
+      CONFIG_NAME = var.environment_name
+    }
+  }
+
   depends_on = [
     aws_iam_role.queue_processor_lambda_iam_role,
   ]

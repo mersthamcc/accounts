@@ -115,7 +115,6 @@ task awsPublish(type: Exec) {
 
 task terraformApply(type: Exec) {
     workingDir "terraform/environment"
-    commandLine "terraform", "init"
     commandLine "terraform", "apply", "-auto-approve"
     dependsOn build, buildZip, awsPublish
 }
