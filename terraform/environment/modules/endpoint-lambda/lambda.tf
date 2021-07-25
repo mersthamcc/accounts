@@ -17,9 +17,9 @@ resource "aws_lambda_function" "endpoint_lambda" {
   runtime = var.handler_runtime
 }
 
-resource "aws_cloudwatch_log_group" "example" {
+resource "aws_cloudwatch_log_group" "lambda_log_group" {
   name              = "/aws/lambda/${aws_lambda_function.endpoint_lambda.function_name}"
-  retention_in_days = 30
+  retention_in_days = 90
 
   depends_on = [
     aws_lambda_function.endpoint_lambda

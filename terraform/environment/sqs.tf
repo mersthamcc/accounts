@@ -115,9 +115,9 @@ resource "aws_lambda_event_source_mapping" "lambda_sqs_mapping" {
   ]
 }
 
-resource "aws_cloudwatch_log_group" "example" {
+resource "aws_cloudwatch_log_group" "sqs_transactions_log_group" {
   name              = "/aws/lambda/${aws_lambda_function.process_transactions_sqs_lambda.function_name}"
-  retention_in_days = 30
+  retention_in_days = 90
 
   depends_on = [
     aws_lambda_function.process_transactions_sqs_lambda
