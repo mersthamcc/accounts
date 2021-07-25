@@ -6,10 +6,14 @@ import cricket.merstham.website.accounts.configuration.ApiConfiguration;
 import cricket.merstham.website.accounts.configuration.Configuration;
 import cricket.merstham.website.accounts.model.Audit;
 import cricket.merstham.website.accounts.model.EposNowTransaction;
+import cricket.merstham.website.accounts.model.PlayCricketMatch;
+import cricket.merstham.website.accounts.model.PlayCricketPlayer;
 import cricket.merstham.website.accounts.sage.ApiClient;
+import cricket.merstham.website.accounts.sage.ApiException;
 import cricket.merstham.website.accounts.sage.api.ContactPaymentsApi;
 import cricket.merstham.website.accounts.sage.api.SalesCreditNotesApi;
 import cricket.merstham.website.accounts.sage.api.SalesInvoicesApi;
+import cricket.merstham.website.accounts.sage.api.SalesQuickEntriesApi;
 import cricket.merstham.website.accounts.sage.model.*;
 import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.slf4j.Logger;
@@ -23,6 +27,7 @@ import javax.ws.rs.core.UriBuilder;
 
 import java.net.URI;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.text.MessageFormat.format;
@@ -76,6 +81,38 @@ public class SageAccountingService {
             LOG.warn(
                     "Skipping transaction {} as has a zero value or no transaction items",
                     transaction.getBarcode());
+            return false;
+        }
+    }
+
+    public boolean createQuickEntriesForMatchFees(
+            PlayCricketMatch match, List<PlayCricketPlayer> players) {
+        ApiClient apiClient = getClient();
+        SalesQuickEntriesApi api = new SalesQuickEntriesApi(apiClient);
+
+        try {
+            players.forEach(
+                    p -> {
+                        PostSalesQuickEntriesSalesQuickEntry request =
+                                mappingService.createQuickEntryForMatchFee(match, p);
+                        try {
+                            LOG.info(
+                                    "Creating QE for team = {}/{}, player = {}, reference = {}, cost = £{}",
+                                    match.getHomeTeamName(),
+                                    match.getAwayTeamName(),
+                                    p.getPlayerName(),
+                                    request.getReference(),
+                                    request.getTotalAmount().doubleValue());
+                            refreshClient(apiClient);
+                            api.postSalesQuickEntries(
+                                    new PostSalesQuickEntries().salesQuickEntry(request));
+                        } catch (ApiException | JsonProcessingException e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+            return true;
+        } catch (RuntimeException e) {
+            LOG.error("Error creating quick entry", e);
             return false;
         }
     }

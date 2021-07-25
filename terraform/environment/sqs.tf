@@ -21,8 +21,11 @@ data "aws_iam_policy_document" "email_queue_policy_document" {
     effect = "Allow"
 
     principals {
-      type        = "AWS"
-      identifiers = [aws_iam_role.end_of_day_lambda_iam_role.arn]
+      type = "AWS"
+      identifiers = [
+        aws_iam_role.end_of_day_lambda_iam_role.arn,
+        aws_iam_role.match_fee_lambda_iam_role.arn,
+      ]
     }
 
     actions = [
@@ -60,6 +63,7 @@ data "aws_iam_policy_document" "email_queue_policy_document" {
     time_sleep.wait_60_seconds,
     aws_iam_role.queue_processor_lambda_iam_role,
     aws_iam_role.end_of_day_lambda_iam_role,
+    aws_iam_role.match_fee_lambda_iam_role,
   ]
 }
 
@@ -108,5 +112,14 @@ resource "aws_lambda_event_source_mapping" "lambda_sqs_mapping" {
     aws_sqs_queue_policy.process_transactions_queue_policy,
     aws_lambda_function.process_transactions_sqs_lambda,
     aws_iam_role.queue_processor_lambda_iam_role,
+  ]
+}
+
+resource "aws_cloudwatch_log_group" "example" {
+  name              = "/aws/lambda/${aws_lambda_function.process_transactions_sqs_lambda.function_name}"
+  retention_in_days = 30
+
+  depends_on = [
+    aws_lambda_function.process_transactions_sqs_lambda
   ]
 }

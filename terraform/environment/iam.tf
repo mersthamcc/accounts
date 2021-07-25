@@ -24,10 +24,8 @@ data "aws_iam_policy_document" "logging_policy" {
   version = "2012-10-17"
   statement {
     actions = [
-      "logs:CreateLogGroup",
       "logs:CreateLogStream",
       "logs:PutLogEvents",
-      "logs:CreateLogGroup"
     ]
     resources = [
       "arn:aws:logs:*:*:*"
@@ -139,4 +137,20 @@ resource "aws_iam_role_policy_attachment" "queue_processor_lambda_logs" {
 resource "aws_iam_role_policy_attachment" "queue_processor_lambda_audit_dynamo" {
   role       = aws_iam_role.queue_processor_lambda_iam_role.name
   policy_arn = aws_iam_policy.lambda_audit_dynamo_policy.arn
+}
+
+resource "aws_iam_role" "match_fee_lambda_iam_role" {
+  name = "${var.environment_name}-match-fee-lambda-role"
+
+  assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "match_fee_lambda_dynamo" {
+  role       = aws_iam_role.match_fee_lambda_iam_role.name
+  policy_arn = aws_iam_policy.lambda_dynamo_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "match_fee_lambda_logs" {
+  role       = aws_iam_role.match_fee_lambda_iam_role.name
+  policy_arn = aws_iam_policy.endpoint_logging_policy.arn
 }

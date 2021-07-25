@@ -57,5 +57,8 @@ resource "aws_dynamodb_table_item" "test-config" {
         }
       }
     }
+    play_cricket_team_mapping = {
+      L = var.play_cricket_team_mapping
+    }
   })
 }
