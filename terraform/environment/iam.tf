@@ -26,7 +26,6 @@ data "aws_iam_policy_document" "logging_policy" {
     actions = [
       "logs:CreateLogStream",
       "logs:PutLogEvents",
-      "logs:CreateLogGroup"
     ]
     resources = [
       "arn:aws:logs:*:*:*"
