@@ -21,7 +21,7 @@ data "aws_iam_policy_document" "email_queue_policy_document" {
     effect = "Allow"
 
     principals {
-      type        = "AWS"
+      type = "AWS"
       identifiers = [
         aws_iam_role.end_of_day_lambda_iam_role.arn,
         aws_iam_role.match_fee_lambda_iam_role.arn,

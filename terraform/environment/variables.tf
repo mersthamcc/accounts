@@ -68,5 +68,5 @@ variable "tender_mapping" {
 
 variable "play_cricket_team_mapping" {
   description = "A HCL formatted DynamoDB JSON document mapping PlayCricket team names to Sage contacts/ledgers"
-  default = []
+  default     = []
 }
