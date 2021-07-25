@@ -65,3 +65,8 @@ variable "tender_mapping" {
   description = "A HCL formatted DynamoDB JSON document mapping Epos tenders to Sage bank accounts"
   default     = []
 }
+
+variable "play_cricket_team_mapping" {
+  description = "A HCL formatted DynamoDB JSON document mapping PlayCricket team names to Sage contacts/ledgers"
+  default = []
+}

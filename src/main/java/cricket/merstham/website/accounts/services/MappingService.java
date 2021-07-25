@@ -1,7 +1,10 @@
 package cricket.merstham.website.accounts.services;
 
-import cricket.merstham.website.accounts.configuration.MappingConfiguration;
+import cricket.merstham.website.accounts.configuration.Configuration;
+import cricket.merstham.website.accounts.configuration.PlayCricketTeamMapping;
 import cricket.merstham.website.accounts.model.EposNowTransaction;
+import cricket.merstham.website.accounts.model.PlayCricketMatch;
+import cricket.merstham.website.accounts.model.PlayCricketPlayer;
 import cricket.merstham.website.accounts.sage.model.*;
 
 import java.math.BigInteger;
@@ -10,21 +13,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.text.MessageFormat.format;
+
 public class MappingService {
 
     private final ConfigurationService configurationService;
     private final DynamoService dynamoService;
     private final EposNowService eposNowService;
-    private final MappingConfiguration mappingConfiguration;
+    private final Configuration configuration;
+    private final PlayCricketService playCricketService;
 
     public MappingService(
             ConfigurationService configurationService,
             EposNowService eposNowService,
-            DynamoService dynamoService) {
+            DynamoService dynamoService,
+            PlayCricketService playCricketService) {
         this.configurationService = configurationService;
         this.eposNowService = eposNowService;
         this.dynamoService = dynamoService;
-        this.mappingConfiguration = dynamoService.getConfig().getMappingConfiguration();
+        this.configuration = dynamoService.getConfig();
+        this.playCricketService = playCricketService;
     }
 
     public PostSalesInvoicesSalesInvoice salesInvoiceFromEposTransaction(
@@ -62,8 +70,14 @@ public class MappingService {
             EposNowTransaction transaction, SalesInvoice salesInvoice) {
         return new PostContactPaymentsContactPayment()
                 .bankAccountId(
-                        mappingConfiguration.getTenderMapping(
-                                transaction.getTenders().get(0).getTenderTypeId().intValue()))
+                        configuration
+                                .getMappingConfiguration()
+                                .getTenderMapping(
+                                        transaction
+                                                .getTenders()
+                                                .get(0)
+                                                .getTenderTypeId()
+                                                .intValue()))
                 .transactionTypeId("CUSTOMER_RECEIPT")
                 .contactId(salesInvoice.getContact().getId())
                 .totalAmount(transaction.getTotalAmount().doubleValue())
@@ -110,8 +124,14 @@ public class MappingService {
             EposNowTransaction transaction, SalesCreditNote creditNote) {
         return new PostContactPaymentsContactPayment()
                 .bankAccountId(
-                        mappingConfiguration.getTenderMapping(
-                                transaction.getTenders().get(0).getTenderTypeId().intValue()))
+                        configuration
+                                .getMappingConfiguration()
+                                .getTenderMapping(
+                                        transaction
+                                                .getTenders()
+                                                .get(0)
+                                                .getTenderTypeId()
+                                                .intValue()))
                 .transactionTypeId("CUSTOMER_REFUND")
                 .contactId(creditNote.getContact().getId())
                 .totalAmount(transaction.getTotalAmount().abs().doubleValue())
@@ -145,8 +165,9 @@ public class MappingService {
                                                 .abs()
                                                 .setScale(2, RoundingMode.HALF_DOWN)
                                                 .doubleValue()))
-                .ledgerAccountId(mappingConfiguration.getDefaultLedgerAccountId())
-                .taxRateId(mappingConfiguration.getDefaultTaxRateId());
+                .ledgerAccountId(
+                        configuration.getMappingConfiguration().getDefaultLedgerAccountId())
+                .taxRateId(configuration.getMappingConfiguration().getDefaultTaxRateId());
     }
 
     private PostSalesCreditNotesSalesCreditNoteCreditNoteLines createLine(
@@ -171,14 +192,48 @@ public class MappingService {
                                                 .abs()
                                                 .setScale(2, RoundingMode.HALF_DOWN)
                                                 .doubleValue()))
-                .ledgerAccountId(mappingConfiguration.getDefaultLedgerAccountId())
-                .taxRateId(mappingConfiguration.getDefaultTaxRateId());
+                .ledgerAccountId(
+                        configuration.getMappingConfiguration().getDefaultLedgerAccountId())
+                .taxRateId(configuration.getMappingConfiguration().getDefaultTaxRateId());
     }
 
     private String mapCustomerId(BigInteger customerId) {
         if (customerId == null) {
-            return mappingConfiguration.getDefaultCustomerId();
+            return configuration.getMappingConfiguration().getDefaultCustomerId();
         }
-        return mappingConfiguration.getDefaultCustomerId();
+        return configuration.getMappingConfiguration().getDefaultCustomerId();
+    }
+
+    public PostSalesQuickEntriesSalesQuickEntry createQuickEntryForMatchFee(
+            PlayCricketMatch match, PlayCricketPlayer p) {
+        PlayCricketTeamMapping mapping =
+                configuration.getPlayCricketTeamMapping().stream()
+                        .filter(
+                                m ->
+                                        m.getPlayCricketName()
+                                                .equals(playCricketService.getOurTeamName(match)))
+                        .findFirst()
+                        .get();
+        return new PostSalesQuickEntriesSalesQuickEntry()
+                .quickEntryTypeId("invoice")
+                .contactId(mapping.getCustomerId())
+                .ledgerAccountId(mapping.getLedgerId())
+                .date(match.getMatchDate())
+                .reference(normalisePlayerName(p))
+                .details(p.getPlayerName())
+                .netAmount(5.00)
+                .totalAmount(5.00)
+                .taxRateId("GB_EXEMPT");
+    }
+
+    private String normalisePlayerName(PlayCricketPlayer p) {
+        String[] split = p.getPlayerName().toUpperCase().split("\\s+", 2);
+
+        if (split.length == 1) {
+            return p.getPlayerName().toUpperCase();
+        }
+        String formatted = format("{0}, {1}", split[1], split[0]);
+
+        return formatted.substring(0, Math.min(formatted.length(), 25));
     }
 }

@@ -34,7 +34,8 @@ public class SageCallback
                                 new EposNowService(
                                         new EposNowApiClient(
                                                 dynamoService.getConfig().getApiConfiguration())),
-                                dynamoService),
+                                dynamoService,
+                                null),
                         dynamoService);
     }
 

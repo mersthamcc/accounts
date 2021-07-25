@@ -16,3 +16,12 @@ resource "aws_lambda_function" "endpoint_lambda" {
 
   runtime = var.handler_runtime
 }
+
+resource "aws_cloudwatch_log_group" "example" {
+  name              = "/aws/lambda/${aws_lambda_function.endpoint_lambda.function_name}"
+  retention_in_days = 30
+
+  depends_on = [
+    aws_lambda_function.endpoint_lambda
+  ]
+}
