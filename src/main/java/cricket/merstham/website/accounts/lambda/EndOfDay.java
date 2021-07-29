@@ -13,12 +13,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.sqs.SqsClient;
+import software.amazon.awssdk.services.sqs.model.MessageAttributeValue;
 import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
+import static cricket.merstham.website.accounts.lambda.ProcessTransactions.MESSAGE_TYPE_ATTRIBUTE;
 import static java.text.MessageFormat.format;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 
@@ -99,9 +102,13 @@ public class EndOfDay
             String groupId = UUID.randomUUID().toString();
             int count = 0;
             for (var t : transactions) {
+                MessageAttributeValue attribute =
+                        MessageAttributeValue.builder().dataType("String").stringValue("epos").build();
+
                 SendMessageRequest request =
                         SendMessageRequest.builder()
                                 .queueUrl(apiConfiguration.getQueueUrl())
+                                .messageAttributes(Map.of(MESSAGE_TYPE_ATTRIBUTE, attribute))
                                 .messageGroupId(
                                         groupId.concat("-")
                                                 .concat(input.getRequestContext().getRequestId()))
