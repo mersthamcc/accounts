@@ -103,7 +103,10 @@ public class EndOfDay
             int count = 0;
             for (var t : transactions) {
                 MessageAttributeValue attribute =
-                        MessageAttributeValue.builder().dataType("String").stringValue("epos").build();
+                        MessageAttributeValue.builder()
+                                .dataType("String")
+                                .stringValue("epos")
+                                .build();
 
                 SendMessageRequest request =
                         SendMessageRequest.builder()
