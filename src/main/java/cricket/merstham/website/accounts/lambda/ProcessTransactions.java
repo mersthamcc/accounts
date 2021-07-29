@@ -54,29 +54,36 @@ public class ProcessTransactions implements RequestHandler<SQSEvent, Void> {
                 SQSEvent.MessageAttribute transactionType =
                         message.getMessageAttributes().get(MESSAGE_TYPE_ATTRIBUTE);
 
-                switch (transactionType.getStringValue()) {
-                    case EPOS_NOW_TRANSACTION:
-                        LOG.info("Processing EPOS transaction message");
-                        sageAccountingService.createEposNowSalesTransaction(
-                                serializationService.deserialise(
-                                        message.getBody(), EposNowTransaction.class));
-                        break;
-                    case MATCH_FEE_TRANSACTION:
-                        LOG.info("Processing match fee message");
-                        PlayCricketMatch match =
-                                serializationService.deserialise(
-                                        message.getBody(), PlayCricketMatch.class);
+                if (transactionType == null) {
+                    LOG.info("Processing EPOS transaction message");
+                    sageAccountingService.createEposNowSalesTransaction(
+                            serializationService.deserialise(
+                                    message.getBody(), EposNowTransaction.class));
+                } else {
+                    switch (transactionType.getStringValue()) {
+                        case EPOS_NOW_TRANSACTION:
+                            LOG.info("Processing EPOS transaction message");
+                            sageAccountingService.createEposNowSalesTransaction(
+                                    serializationService.deserialise(
+                                            message.getBody(), EposNowTransaction.class));
+                            break;
+                        case MATCH_FEE_TRANSACTION:
+                            LOG.info("Processing match fee message");
+                            PlayCricketMatch match =
+                                    serializationService.deserialise(
+                                            message.getBody(), PlayCricketMatch.class);
 
-                        List<PlayCricketPlayer> players =
-                                playCricketService.getOurPlayers(match.getId());
+                            List<PlayCricketPlayer> players =
+                                    playCricketService.getOurPlayers(match.getId());
 
-                        sageAccountingService.createQuickEntriesForMatchFees(match, players);
-                        break;
-                    default:
-                        LOG.error(
-                                "Unknown message type encountered {}",
-                                transactionType.getStringValue());
-                        break;
+                            sageAccountingService.createQuickEntriesForMatchFees(match, players);
+                            break;
+                        default:
+                            LOG.error(
+                                    "Unknown message type encountered {}",
+                                    transactionType.getStringValue());
+                            break;
+                    }
                 }
             }
         } catch (JsonProcessingException e) {

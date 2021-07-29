@@ -14,7 +14,7 @@ resource "tfe_workspace" "accounting" {
   execution_mode        = "remote"
   file_triggers_enabled = false
   global_remote_state   = false
-  terraform_version     = "1.0.2"
+  terraform_version     = "1.0.3"
 }
 
 resource "tfe_variable" "aws_access_key" {
