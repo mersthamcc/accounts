@@ -14,6 +14,14 @@ jobs:
         with:
           java-version: '11'
           distribution: 'adopt'
+      - name: Get Terraform version
+        id: getterraformversion
+        run: echo "::set-output name=version::$(cat terraform/.terraform-version)"
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: ${{ steps.getterraformversion.outputs.version }}
+          cli_config_credentials_token: ${{ secrets.TF_TOKEN }}
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -29,11 +37,8 @@ jobs:
           aws s3 cp build/distributions/accounts.zip s3://mcc-accounts-deployment/live-accounts.zip
       - name: Deploy bootstrap Terraform
         working-directory: terraform/bootstrap
-        env:
-          TF_TOKEN: ${{ secrets.TF_TOKEN }}
         run: |
-          terraform init -input=false \
-            -backend-config "token=${TF_TOKEN}"
+          terraform init -input=false
 
           terraform apply -auto-approve
 
@@ -45,7 +50,6 @@ jobs:
           mv test-mappings.auto.tfvars test-mappings.tfvars
           mv live-mappings.tfvars live-mappings.auto.tfvars
           terraform init -input=false \
-            -backend-config=live-backend.hcl \
-            -backend-config "token=${TF_TOKEN}"
+            -backend-config=live-backend.hcl
 
           terraform apply -auto-approve

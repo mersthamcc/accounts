@@ -47,7 +47,6 @@ jobs:
         working-directory: terraform/bootstrap
         run: terraform plan -no-color
         continue-on-error: true
-
       - uses: actions/github-script@0.9.0
         env:
           PLAN: "${{ steps.bootstrapplan.outputs.stdout }}"
@@ -62,9 +61,7 @@ jobs:
             ${process.env.PLAN}
             \`\`\`
 
-            </details>
-
-            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+            </details>`;
 
             github.issues.createComment({
               issue_number: context.issue.number,
@@ -72,7 +69,6 @@ jobs:
               repo: context.repo.repo,
               body: output
             })
-
       - name: Terraform Plan (environment)
         id: environmentplan
         working-directory: terraform/environment
@@ -93,7 +89,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `#### Terraform Plan for bootstrap 📖\`${{ steps.environmentplan.outcome }}\`
+            const output = `#### Terraform Plan for live environment 📖\`${{ steps.environmentplan.outcome }}\`
 
             <details><summary>Show Plan</summary>
 
@@ -101,9 +97,7 @@ jobs:
             ${process.env.PLAN}
             \`\`\`
 
-            </details>
-
-            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+            </details>`;
 
             github.issues.createComment({
               issue_number: context.issue.number,
