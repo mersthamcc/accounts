@@ -164,7 +164,7 @@ public class SageAccountingService {
                     payment.getBankAccountId(),
                     creditNote.getDate());
 
-            dynamoService.writeAuditLog(audit.setSagePaymentId(contactPayment.getId()));
+            dynamoService.writeAuditLog(audit.addSagePaymentId(contactPayment.getId()));
             return true;
         } catch (cricket.merstham.website.accounts.sage.ApiException e) {
             LOG.error(
@@ -217,21 +217,23 @@ public class SageAccountingService {
                         transaction.getTotalAmount().setScale(2));
                 return false;
             }
-            PostContactPaymentsContactPayment payment =
-                    mappingService.paymentForEposTransaction(transaction, salesInvoice);
+            for (var tender : transaction.getTenders()) {
+                PostContactPaymentsContactPayment payment =
+                        mappingService.paymentForEposTransaction(tender, salesInvoice);
 
-            ContactPayment contactPayment =
-                    paymentsApi.postContactPayments(
-                            new PostContactPayments().contactPayment(payment));
+                ContactPayment contactPayment =
+                        paymentsApi.postContactPayments(
+                                new PostContactPayments().contactPayment(payment));
+
+                dynamoService.writeAuditLog(audit.addSagePaymentId(contactPayment.getId()));
+            }
             LOG.info(
-                    "Created {} for transaction {} with payment ({}) of £{} in {} on {}",
+                    "Created {} for transaction {} with payments ({}) of £{} on {}",
                     salesInvoice.getDisplayedAs(),
                     transaction.getBarcode(),
-                    contactPayment.getId(),
+                    String.join(", ", audit.getSagePaymentId()),
                     transaction.getTotalAmount().setScale(2),
-                    payment.getBankAccountId(),
                     salesInvoice.getDate());
-            dynamoService.writeAuditLog(audit.setSagePaymentId(contactPayment.getId()));
             return true;
         } catch (cricket.merstham.website.accounts.sage.ApiException e) {
             LOG.error("Error creating Sage invoice for transaction {}", transaction.getBarcode());

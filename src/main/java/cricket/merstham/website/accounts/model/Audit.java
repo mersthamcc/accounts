@@ -7,6 +7,8 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTypeConverted;
 import cricket.merstham.website.accounts.helpers.LocalDateTimeConverter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @DynamoDBTable(tableName = "audit")
 public class Audit {
@@ -15,7 +17,7 @@ public class Audit {
     private String sageCustomerName;
     private String sageCustomerId;
     private String sageDocumentType;
-    private String sagePaymentId;
+    private List<String> sagePaymentId = new ArrayList<>();
     private LocalDateTime dateTransferred;
 
     @DynamoDBHashKey(attributeName = "barcode")
@@ -69,12 +71,17 @@ public class Audit {
     }
 
     @DynamoDBAttribute(attributeName = "sage_payment_id")
-    public String getSagePaymentId() {
+    public List<String> getSagePaymentId() {
         return sagePaymentId;
     }
 
-    public Audit setSagePaymentId(String sagePaymentId) {
+    public Audit setSagePaymentId(List<String> sagePaymentId) {
         this.sagePaymentId = sagePaymentId;
+        return this;
+    }
+
+    public Audit addSagePaymentId(String sagePaymentId) {
+        this.sagePaymentId.add(sagePaymentId);
         return this;
     }
 
