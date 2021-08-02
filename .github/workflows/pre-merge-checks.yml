@@ -53,7 +53,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `#### Terraform Plan for bootstrap 📖\`${{ steps.bootstrapplan.outcome }}\`
+            const output = `#### Terraform Plan for bootstrap 📖 \`${{ steps.bootstrapplan.outcome }}\`
 
             <details><summary>Show Plan</summary>
 
@@ -89,7 +89,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const output = `#### Terraform Plan for live environment 📖\`${{ steps.environmentplan.outcome }}\`
+            const output = `#### Terraform Plan for live environment 📖 \`${{ steps.environmentplan.outcome }}\`
 
             <details><summary>Show Plan</summary>
 

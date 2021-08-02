@@ -67,27 +67,22 @@ public class MappingService {
     }
 
     public PostContactPaymentsContactPayment paymentForEposTransaction(
-            EposNowTransaction transaction, SalesInvoice salesInvoice) {
+            EposNowTransaction.Tender tender, SalesInvoice salesInvoice) {
         return new PostContactPaymentsContactPayment()
                 .bankAccountId(
                         configuration
                                 .getMappingConfiguration()
-                                .getTenderMapping(
-                                        transaction
-                                                .getTenders()
-                                                .get(0)
-                                                .getTenderTypeId()
-                                                .intValue()))
+                                .getTenderMapping(tender.getTenderTypeId().intValue()))
                 .transactionTypeId("CUSTOMER_RECEIPT")
                 .contactId(salesInvoice.getContact().getId())
-                .totalAmount(transaction.getTotalAmount().doubleValue())
-                .date(transaction.getDateTime().toLocalDate())
+                .totalAmount(tender.getAmount().doubleValue())
+                .date(salesInvoice.getDate())
                 .allocatedArtefacts(
                         List.of(
                                 new PostContactPaymentsContactPaymentAllocatedArtefacts()
-                                        .amount(transaction.getTotalAmount().doubleValue())
+                                        .amount(tender.getAmount().doubleValue())
                                         .artefactId(salesInvoice.getId())))
-                .reference(transaction.getBarcode());
+                .reference(salesInvoice.getReference());
     }
 
     public PostSalesCreditNotesSalesCreditNote creditNoteFromEposTransaction(
