@@ -449,6 +449,9 @@ public class EposNowTransaction {
         @JsonProperty("Taxes")
         private List<Tax> taxes;
 
+        @JsonProperty("MultipleChoiceItems")
+        private List<TransactionItem> multipleChoiceItems;
+
         public BigInteger getId() {
             return id;
         }
@@ -527,6 +530,10 @@ public class EposNowTransaction {
 
         public List<Tax> getTaxes() {
             return taxes;
+        }
+
+        public List<TransactionItem> getMultipleChoiceItems() {
+            return multipleChoiceItems;
         }
     }
 

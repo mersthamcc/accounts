@@ -48,11 +48,18 @@ public class MappingService {
                                         .addressLine1("Bar Sales"));
         List<PostSalesCreditNotesSalesCreditNoteCreditNoteLines> lines = new ArrayList<>();
         if (transaction.getTransactionItems() != null) {
-            lines.addAll(
-                    transaction.getTransactionItems().stream()
-                            .filter(t -> t.getQuantity().longValue() > 0)
-                            .map(i -> createLine(i))
-                            .collect(Collectors.toList()));
+            for (var item : transaction.getTransactionItems()) {
+                if (item.getQuantity().longValue() > 0) {
+                    if (item.getMultipleChoiceItems() == null
+                            || item.getMultipleChoiceItems().isEmpty()) {
+                        lines.add(createLine(item));
+                    } else {
+                        for (var subItem : item.getMultipleChoiceItems()) {
+                            lines.add(createLine(subItem));
+                        }
+                    }
+                }
+            }
         }
 
         if (transaction.getMiscProductItems() != null) {
@@ -97,11 +104,18 @@ public class MappingService {
                                         .addressLine1("Bar Sales"));
         List<PostSalesCreditNotesSalesCreditNoteCreditNoteLines> lines = new ArrayList<>();
         if (transaction.getTransactionItems() != null) {
-            lines.addAll(
-                    transaction.getTransactionItems().stream()
-                            .filter(t -> t.getQuantity().longValue() < 0)
-                            .map(i -> createLine(i))
-                            .collect(Collectors.toList()));
+            for (var item : transaction.getTransactionItems()) {
+                if (item.getQuantity().longValue() < 0) {
+                    if (item.getMultipleChoiceItems() == null
+                            || item.getMultipleChoiceItems().isEmpty()) {
+                        lines.add(createLine(item));
+                    } else {
+                        for (var subItem : item.getMultipleChoiceItems()) {
+                            lines.add(createLine(subItem));
+                        }
+                    }
+                }
+            }
         }
 
         if (transaction.getMiscProductItems() != null) {
