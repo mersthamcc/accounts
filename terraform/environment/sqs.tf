@@ -3,11 +3,6 @@ resource "aws_sqs_queue" "transactions" {
   max_message_size           = 262144
   message_retention_seconds  = 1209600
   visibility_timeout_seconds = 900
-
-  kms_master_key_id = "alias/aws/sqs"
-
-  fifo_queue                  = false
-  content_based_deduplication = false
 }
 
 resource "time_sleep" "wait_60_seconds" {
