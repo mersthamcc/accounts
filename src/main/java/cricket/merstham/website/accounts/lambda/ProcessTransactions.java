@@ -19,6 +19,7 @@ public class ProcessTransactions implements RequestHandler<SQSEvent, Void> {
     private static final Logger LOG = LoggerFactory.getLogger(EndOfDay.class);
 
     public static final String MESSAGE_TYPE_ATTRIBUTE = "message-type";
+    public static final String MESSAGE_ID_ATTRIBUTE = "message-id";
     public static final String MATCH_FEE_TRANSACTION = "match-fee";
     public static final String EPOS_NOW_TRANSACTION = "epos";
 
