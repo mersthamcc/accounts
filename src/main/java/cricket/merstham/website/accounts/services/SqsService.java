@@ -11,8 +11,8 @@ import software.amazon.awssdk.services.sqs.model.SendMessageResponse;
 
 import java.util.Map;
 
+import static cricket.merstham.website.accounts.lambda.ProcessTransactions.MESSAGE_ID_ATTRIBUTE;
 import static cricket.merstham.website.accounts.lambda.ProcessTransactions.MESSAGE_TYPE_ATTRIBUTE;
-import static java.text.MessageFormat.format;
 
 public class SqsService {
     private static final Logger LOG = LoggerFactory.getLogger(SqsService.class);
@@ -35,24 +35,22 @@ public class SqsService {
                         .build();
     }
 
-    public void sendMessage(
-            Object message,
-            String requestId,
-            String groupId,
-            String messageId,
-            String messageType) {
-        MessageAttributeValue attribute =
+    public SendMessageResponse sendMessage(Object message, String messageId, String messageType) {
+        MessageAttributeValue messageTypeAttribute =
                 MessageAttributeValue.builder().dataType("String").stringValue(messageType).build();
+        MessageAttributeValue messageIdAttribute =
+                MessageAttributeValue.builder().dataType("String").stringValue(messageId).build();
         SendMessageRequest request =
                 SendMessageRequest.builder()
                         .queueUrl(apiConfiguration.getQueueUrl())
-                        .messageAttributes(Map.of(MESSAGE_TYPE_ATTRIBUTE, attribute))
-                        .messageGroupId(groupId.concat("-").concat(requestId))
-                        .messageDeduplicationId(format("{0}-{1}", requestId, messageId))
+                        .messageAttributes(
+                                Map.of(
+                                        MESSAGE_TYPE_ATTRIBUTE, messageTypeAttribute,
+                                        MESSAGE_ID_ATTRIBUTE, messageIdAttribute))
                         .messageBody(serializationService.serialise(message))
                         .build();
         try {
-            SendMessageResponse result = client.sendMessage(request);
+            return client.sendMessage(request);
         } catch (Exception ex) {
             LOG.error("Error sending to queue", ex);
             throw ex;

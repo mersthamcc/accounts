@@ -52,8 +52,7 @@ public class MatchFeeTransfer
         matches.forEach(
                 m -> {
                     LOG.info("Sending match {} to queue", m.getId());
-                    sqsService.sendMessage(
-                            m, requestId, groupId, Integer.toString(m.getId()), "match-fee");
+                    sqsService.sendMessage(m, requestId, "match-fee");
                 });
 
         return new APIGatewayProxyResponseEvent()

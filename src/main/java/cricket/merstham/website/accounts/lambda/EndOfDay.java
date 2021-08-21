@@ -11,18 +11,12 @@ import cricket.merstham.website.accounts.model.EposNowEndOfDay;
 import cricket.merstham.website.accounts.services.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.sqs.SqsClient;
-import software.amazon.awssdk.services.sqs.model.MessageAttributeValue;
-import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
+import software.amazon.awssdk.services.sqs.model.SendMessageResponse;
 
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 
-import static cricket.merstham.website.accounts.lambda.ProcessTransactions.MESSAGE_TYPE_ATTRIBUTE;
-import static java.text.MessageFormat.format;
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
 
 public class EndOfDay
@@ -32,7 +26,7 @@ public class EndOfDay
     private final EposNowService eposNowService;
     private final ApiConfiguration apiConfiguration;
     private final SerializationService serializationService;
-    private final SqsClient sqsClient;
+    private final SqsService sqsService;
     private final ConfigurationService configurationService;
 
     public EndOfDay() {
@@ -42,8 +36,8 @@ public class EndOfDay
         this.apiConfiguration = config.getApiConfiguration();
         this.eposNowService = new EposNowService(new EposNowApiClient(apiConfiguration));
         this.serializationService = new SerializationService();
-        this.sqsClient =
-                SqsClient.builder().region(Region.of(configurationService.getAwsRegion())).build();
+        this.sqsService =
+                new SqsService(configurationService, serializationService, apiConfiguration);
         this.configurationService = new ConfigurationService();
     }
 
@@ -99,35 +93,15 @@ public class EndOfDay
                 || eposNowService.validateEndOfDay(endOfDay)) {
             var transactions = eposNowService.getTransactionsForDay(endOfDay);
             LOG.info("Retrieved {} transactions from EposNow", transactions.size());
-            String groupId = UUID.randomUUID().toString();
             int count = 0;
             for (var t : transactions) {
-                MessageAttributeValue attribute =
-                        MessageAttributeValue.builder()
-                                .dataType("String")
-                                .stringValue("epos")
-                                .build();
-
-                SendMessageRequest request =
-                        SendMessageRequest.builder()
-                                .queueUrl(apiConfiguration.getQueueUrl())
-                                .messageAttributes(Map.of(MESSAGE_TYPE_ATTRIBUTE, attribute))
-                                .messageGroupId(
-                                        groupId.concat("-")
-                                                .concat(input.getRequestContext().getRequestId()))
-                                .messageDeduplicationId(
-                                        format(
-                                                "{0}-{1}",
-                                                input.getRequestContext().getRequestId(),
-                                                t.getBarcode()))
-                                .messageBody(serializationService.serialise(t))
-                                .build();
+                String messageId = UUID.randomUUID().toString();
                 LOG.info(
                         "Sending transaction {} to queue {}",
                         t.getBarcode(),
                         apiConfiguration.getQueueUrl());
                 try {
-                    var result = sqsClient.sendMessage(request);
+                    SendMessageResponse result = sqsService.sendMessage(t, messageId, "epos");
                     LOG.info(
                             "Transaction {} on queue with message ID {} sequence {}",
                             t.getBarcode(),

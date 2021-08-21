@@ -1,12 +1,12 @@
 resource "aws_sqs_queue" "transactions" {
-  name                       = "${var.environment_name}-transactions.fifo"
+  name                       = "${var.environment_name}-transactions"
   max_message_size           = 262144
   message_retention_seconds  = 1209600
   visibility_timeout_seconds = 900
 
   kms_master_key_id = "alias/aws/sqs"
 
-  fifo_queue                  = true
+  fifo_queue                  = false
   content_based_deduplication = false
 }
 
@@ -88,6 +88,8 @@ resource "aws_lambda_function" "process_transactions_sqs_lambda" {
   timeout       = 600
   memory_size   = 512
   runtime       = "java11"
+
+  reserved_concurrent_executions = 1
 
   environment {
     variables = {
