@@ -36,3 +36,16 @@ resource "aws_cloudwatch_log_metric_filter" "transaction_processing_success_metr
     default_value = "0"
   }
 }
+
+resource "aws_cloudwatch_log_metric_filter" "transaction_processing_missing_tender_metric" {
+  name           = "${var.environment_name}-transaction-processing-missing-tender-warning"
+  pattern        = "?\"but no tender found\""
+  log_group_name = aws_cloudwatch_log_group.sqs_transactions_log_group.name
+
+  metric_transformation {
+    name          = "MissingTenderWarningCount"
+    namespace     = "${var.environment_name}-processing-metrics"
+    value         = "1"
+    default_value = "0"
+  }
+}
