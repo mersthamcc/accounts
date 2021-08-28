@@ -1,4 +1,4 @@
-name: Deploy Docs to PaaS on PR merge
+name: Deploy on PR merge
 on:
   push:
     branches:
