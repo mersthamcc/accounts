@@ -35,6 +35,7 @@ public class PlayCricketService {
         Client client = JerseyClientBuilder.createClient();
 
         WebTarget target = client.target(URI.create(BASE_URL));
+        LOG.info("Getting matches between {} and {} from PlayCricket", startDate, endDate);
 
         return target
                 .queryParam("site_id", configurationService.getPlayCricketSiteId())
