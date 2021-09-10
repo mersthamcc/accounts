@@ -13,41 +13,65 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
+
       - name: Set up JDK 11
         uses: actions/setup-java@v2
         with:
           java-version: '11'
           distribution: 'adopt'
+
+      - name: Test infrastructure with Checkov (bootstrap)
+        id: checkov-bootstrap
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: terraform/bootstrap
+          framework: terraform
+
+      - name: Test infrastructure with Checkov (environment)
+        id: checkov-environment
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: terraform/environment
+          framework: terraform
+
       - name: Get Terraform version
         id: getterraformversion
         run: echo "::set-output name=version::$(cat terraform/.terraform-version)"
+
       - uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: ${{ steps.getterraformversion.outputs.version }}
           cli_config_credentials_token: ${{ secrets.TF_TOKEN }}
+
       - name: Run Unit Tests
         run: ./gradlew clean spotlessCheck build test
+
       - name: Terraform Format Check
         working-directory: terraform/
         run: terraform fmt -check -recursive
+
       - name: Terraform Validate (bootstrap)
         working-directory: terraform/bootstrap
         run: |
-          terraform init -input=false
+          terraform init -input=false -backend=false
           terraform validate
 
       - name: Terraform Validate (environment)
         working-directory: terraform/environment
         run: |
-          terraform init -input=false
+          terraform init -input=false -backend=false
           terraform validate
 
       - name: Terraform Plan (bootstrap)
         id: bootstrapplan
         working-directory: terraform/bootstrap
-        run: terraform plan -no-color
+        run: |
+          terraform init -input=false
+          terraform plan -no-color
         continue-on-error: true
-      - uses: actions/github-script@0.9.0
+
+      - name: Write plan to PR (environment)
+        uses: actions/github-script@0.9.0
         env:
           PLAN: "${{ steps.bootstrapplan.outputs.stdout }}"
         with:
@@ -69,6 +93,7 @@ jobs:
               repo: context.repo.repo,
               body: output
             })
+
       - name: Terraform Plan (environment)
         id: environmentplan
         working-directory: terraform/environment
@@ -83,7 +108,8 @@ jobs:
           mv live-mappings.auto.tfvars live-mappings.tfvars
         continue-on-error: true
 
-      - uses: actions/github-script@0.9.0
+      - name: Write plan to PR (environment)
+        uses: actions/github-script@0.9.0
         env:
           PLAN: "${{ steps.environmentplan.outputs.stdout }}"
         with:
@@ -106,37 +132,48 @@ jobs:
               body: output
             })
 
+      - name: Terraform Plan Status
+        if: steps.bootstrapplan.outcome == 'failure' || steps.environmentplan.outcome == 'failure'
+        run: exit 1
 
   deploy-test-environment:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2
+
       - name: Set up JDK 11
         uses: actions/setup-java@v2
         with:
           java-version: '11'
           distribution: 'adopt'
+
       - name: Get Terraform version
         id: getterraformversion
         run: echo "::set-output name=version::$(cat terraform/.terraform-version)"
+
       - uses: hashicorp/setup-terraform@v1
         with:
           terraform_version: ${{ steps.getterraformversion.outputs.version }}
           cli_config_credentials_token: ${{ secrets.TF_TOKEN }}
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-2
+
       - name: Build
         run: ./gradlew clean build -x test
+
       - name: Build Zip
         run: ./gradlew buildZip
+
       - name: Copy test ZIP to S3
         run: |
           aws s3 cp build/distributions/accounts.zip s3://mcc-accounts-deployment/test-accounts.zip
+
       - name: Deploy test build to AWS
         working-directory: terraform/environment
         env:
