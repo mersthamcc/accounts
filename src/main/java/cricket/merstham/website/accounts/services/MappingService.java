@@ -82,7 +82,7 @@ public class MappingService {
                                 .getTenderMapping(tender.getTenderTypeId().intValue()))
                 .transactionTypeId("CUSTOMER_RECEIPT")
                 .contactId(salesInvoice.getContact().getId())
-                .totalAmount(tender.getAmount().doubleValue())
+                .totalAmount(tender.getAmount().doubleValue() - tender.getChangeGiven().doubleValue())
                 .date(salesInvoice.getDate())
                 .allocatedArtefacts(
                         List.of(
