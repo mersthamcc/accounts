@@ -76,13 +76,13 @@ public class PlayCricketService {
             return detail.getPlayers().stream()
                     .filter(m -> m.containsKey(HOME_TEAM))
                     .findFirst()
-                    .get()
+                    .orElseThrow()
                     .get(HOME_TEAM);
         }
         return detail.getPlayers().stream()
                 .filter(m -> m.containsKey(AWAY_TEAM))
                 .findFirst()
-                .get()
+                .orElseThrow()
                 .get(AWAY_TEAM);
     }
 
