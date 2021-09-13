@@ -223,7 +223,7 @@ public class MappingService {
                                         m.getPlayCricketName()
                                                 .equals(playCricketService.getOurTeamName(match)))
                         .findFirst()
-                        .get();
+                        .orElseThrow();
         return new PostSalesQuickEntriesSalesQuickEntry()
                 .quickEntryTypeId("invoice")
                 .contactId(mapping.getCustomerId())
