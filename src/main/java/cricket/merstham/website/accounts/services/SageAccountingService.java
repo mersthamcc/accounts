@@ -4,12 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import cricket.merstham.website.accounts.configuration.ApiConfiguration;
 import cricket.merstham.website.accounts.configuration.Configuration;
-import cricket.merstham.website.accounts.model.Audit;
-import cricket.merstham.website.accounts.model.EposNowTransaction;
-import cricket.merstham.website.accounts.model.PlayCricketMatch;
-import cricket.merstham.website.accounts.model.PlayCricketPlayer;
+import cricket.merstham.website.accounts.model.*;
 import cricket.merstham.website.accounts.sage.ApiClient;
 import cricket.merstham.website.accounts.sage.ApiException;
+import cricket.merstham.website.accounts.sage.ApiResponse;
+import cricket.merstham.website.accounts.sage.Pair;
 import cricket.merstham.website.accounts.sage.api.ContactPaymentsApi;
 import cricket.merstham.website.accounts.sage.api.SalesCreditNotesApi;
 import cricket.merstham.website.accounts.sage.api.SalesInvoicesApi;
@@ -22,12 +21,17 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Form;
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
 import java.net.URI;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.text.MessageFormat.format;
@@ -115,6 +119,77 @@ public class SageAccountingService {
             LOG.error("Error creating quick entry", e);
             return false;
         }
+    }
+
+    public List<String> getUnpaidIds(LocalDate startDate, LocalDate endDate)
+            throws ApiException, JsonProcessingException {
+        ApiClient apiClient = getClient();
+        SalesQuickEntriesApi api = new SalesQuickEntriesApi(apiClient);
+        List<String> ids = new ArrayList<>();
+        boolean done = false;
+        int page = 1;
+        int pageSize = 200;
+
+        while (!done) {
+            refreshClient(apiClient);
+
+            final String accepts = apiClient.selectHeaderAccept(new String[] {"application/json"});
+
+            final String contentType = apiClient.selectHeaderContentType(new String[] {});
+
+            List<Pair> queryParams = new ArrayList<>();
+            queryParams.add(new Pair("from_date", startDate.toString()));
+            queryParams.add(new Pair("to_date", endDate.toString()));
+            queryParams.add(new Pair("status_id", "UNPAID"));
+            queryParams.add(new Pair("items_per_page", Integer.toString(pageSize)));
+            queryParams.add(new Pair("page", Integer.toString(page)));
+            queryParams.add(new Pair("attributes", "status"));
+
+            Map<String, String> headers = new HashMap<>();
+
+            ApiResponse<SagePager<List<QuickEntry>>> response =
+                    apiClient.invokeAPI(
+                            "/sales_quick_entries",
+                            "GET",
+                            queryParams,
+                            null,
+                            headers,
+                            new HashMap<String, Object>(),
+                            accepts,
+                            contentType,
+                            new String[] {"oauth"},
+                            new GenericType<>() {});
+
+            LOG.info("Response status code = {}", response.getStatusCode());
+            LOG.info("Response body = {}", response.getData());
+            ids.addAll(
+                    response.getData().getItems().stream()
+                            .map(e -> e.getId())
+                            .collect(Collectors.toList()));
+            if (response.getData().getNext() == null) {
+                done = true;
+            } else {
+                page = page + 1;
+            }
+        }
+        return ids;
+    }
+
+    public void deleteEntries(List<String> idsToDelete) {
+        ApiClient apiClient = getClient();
+        SalesQuickEntriesApi api = new SalesQuickEntriesApi(apiClient);
+
+        idsToDelete.forEach(
+                id -> {
+                    LOG.info("Removing QE Entry {}", id);
+
+                    try {
+                        api.deleteSalesQuickEntriesKey(id);
+                    } catch (ApiException e) {
+                        LOG.error("Error deleting item", e);
+                        throw new RuntimeException(e);
+                    }
+                });
     }
 
     private boolean createCreditNoteAndPayment(

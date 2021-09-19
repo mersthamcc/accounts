@@ -37,3 +37,7 @@ variable "s3_version" {}
 variable "environment_name" {
   description = "Name of the environment"
 }
+
+variable "timeout" {
+  default = 30
+}
