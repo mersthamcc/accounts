@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.text.MessageFormat.format;
@@ -69,22 +70,31 @@ public class SageAccountingService {
         SalesCreditNotesApi creditNotesApi = new SalesCreditNotesApi(apiClient);
         ContactPaymentsApi paymentsApi = new ContactPaymentsApi(apiClient);
         refreshClient(apiClient);
-        if (transaction.getTotalAmount().doubleValue() > 0.00
-                && containsInvoiceableItems(transaction)) {
-            LOG.info(
-                    "Creating Sage sales invoice artefacts for transaction {}",
-                    transaction.getBarcode());
-            return createSalesInvoiceAndPayment(transaction, salesInvoicesApi, paymentsApi);
-        } else if (transaction.getTotalAmount().doubleValue() < 0.00
-                && containsRefundItems(transaction)) {
-            LOG.info(
-                    "Creating Sage credit note artefacts for transaction {}",
-                    transaction.getBarcode());
-            return createCreditNoteAndPayment(transaction, creditNotesApi, paymentsApi);
+        Optional<Audit> previousAuditEntry = dynamoService.getAuditLog(transaction.getBarcode());
+        if (previousAuditEntry.isEmpty()) {
+            if (transaction.getTotalAmount().doubleValue() > 0.00
+                    && containsInvoiceableItems(transaction)) {
+                LOG.info(
+                        "Creating Sage sales invoice artefacts for transaction {}",
+                        transaction.getBarcode());
+                return createSalesInvoiceAndPayment(transaction, salesInvoicesApi, paymentsApi);
+            } else if (transaction.getTotalAmount().doubleValue() < 0.00
+                    && containsRefundItems(transaction)) {
+                LOG.info(
+                        "Creating Sage credit note artefacts for transaction {}",
+                        transaction.getBarcode());
+                return createCreditNoteAndPayment(transaction, creditNotesApi, paymentsApi);
+            } else {
+                LOG.warn(
+                        "Skipping transaction {} as has a zero value or no transaction items",
+                        transaction.getBarcode());
+                return false;
+            }
         } else {
             LOG.warn(
-                    "Skipping transaction {} as has a zero value or no transaction items",
-                    transaction.getBarcode());
+                    "Skipping transaction {} as previously transferred at {}",
+                    transaction.getBarcode(),
+                    previousAuditEntry.get().getDateTransferred());
             return false;
         }
     }
@@ -100,16 +110,45 @@ public class SageAccountingService {
                         PostSalesQuickEntriesSalesQuickEntry request =
                                 mappingService.createQuickEntryForMatchFee(match, p);
                         try {
-                            LOG.info(
-                                    "Creating QE for team = {}/{}, player = {}, reference = {}, cost = £{}",
-                                    match.getHomeTeamName(),
-                                    match.getAwayTeamName(),
-                                    p.getPlayerName(),
-                                    request.getReference(),
-                                    request.getTotalAmount().doubleValue());
-                            refreshClient(apiClient);
-                            api.postSalesQuickEntries(
-                                    new PostSalesQuickEntries().salesQuickEntry(request));
+                            String auditKey =
+                                    format(
+                                            "PC-{0,number,#}-{1,number,#}",
+                                            match.getId(),
+                                            p.getPlayerId());
+
+                            Optional<Audit> previousAuditEntry =
+                                    dynamoService.getAuditLog(auditKey);
+                            if (previousAuditEntry.isEmpty()) {
+                                LOG.info(
+                                        "Creating QE for team = {}/{}, player = {}, reference = {}, cost = £{}",
+                                        match.getHomeTeamName(),
+                                        match.getAwayTeamName(),
+                                        p.getPlayerName(),
+                                        request.getReference(),
+                                        request.getTotalAmount().doubleValue());
+                                refreshClient(apiClient);
+                                var response =
+                                        api.postSalesQuickEntries(
+                                                new PostSalesQuickEntries()
+                                                        .salesQuickEntry(request));
+                                Audit audit =
+                                        new Audit()
+                                                .setBarcode(auditKey)
+                                                .setSageCustomerId(request.getContactId())
+                                                .setSageCustomerName(request.getContactName())
+                                                .setSageDocumentType("QE Sales Invoice")
+                                                .setSagePaymentId(List.of())
+                                                .setDateTransferred(LocalDateTime.now())
+                                                .setSageReference(response.getReference());
+                                dynamoService.writeAuditLog(audit);
+                            } else {
+                                LOG.warn(
+                                        "Skipping QE for team = {}/{}, player = {}, as previously transferred at {}",
+                                        match.getHomeTeamName(),
+                                        match.getAwayTeamName(),
+                                        p.getPlayerName(),
+                                        previousAuditEntry.get().getDateTransferred());
+                            }
                         } catch (ApiException | JsonProcessingException e) {
                             throw new RuntimeException(e);
                         }

@@ -55,7 +55,7 @@ resource "aws_cloudwatch_log_group" "refresh_token_lambda_log_group" {
 resource "aws_cloudwatch_event_rule" "match_fee_schedule" {
   name                = "${var.environment_name}-match-fee-transfer-schedule"
   schedule_expression = "cron(0 6 ? * FRI *)"
-  is_enabled          = true
+  is_enabled          = var.match_fee_transfer_enabled
 }
 
 resource "aws_cloudwatch_event_target" "match_fee_schedule_target" {
