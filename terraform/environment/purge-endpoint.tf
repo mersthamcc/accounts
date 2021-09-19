@@ -18,7 +18,7 @@ module "purge_endpoint" {
     END_OF_DAY_AUTH = base64encode(join(":", [
       random_password.end_of_day_username.result,
       random_password.end_of_day_password.result
-    ]
+      ]
     ))
   }
 
