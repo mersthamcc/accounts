@@ -7,7 +7,7 @@ resource "aws_lambda_function" "endpoint_lambda" {
   function_name = "${var.environment_name}-${replace("${var.endpoint_name}-lambda", ".", "")}"
   role          = var.lambda_role_arn
   handler       = var.handler_function_name
-  timeout       = 30
+  timeout       = var.timeout
   memory_size   = 512
 
   environment {
