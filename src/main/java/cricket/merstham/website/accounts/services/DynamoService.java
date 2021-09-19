@@ -8,6 +8,8 @@ import cricket.merstham.website.accounts.configuration.Configuration;
 import cricket.merstham.website.accounts.model.Audit;
 import cricket.merstham.website.accounts.model.TokenStore;
 
+import java.util.Optional;
+
 public class DynamoService {
 
     private final ConfigurationService configurationService;
@@ -52,5 +54,10 @@ public class DynamoService {
 
     public void writeAuditLog(Audit audit) {
         instanceMapper.save(audit);
+    }
+
+    public Optional<Audit> getAuditLog(String auditKey) {
+        Audit audit = instanceMapper.load(Audit.class, auditKey);
+        return Optional.ofNullable(audit);
     }
 }

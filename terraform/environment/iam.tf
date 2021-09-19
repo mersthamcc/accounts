@@ -102,6 +102,7 @@ data "aws_iam_policy_document" "audit_dynamo_policy_document" {
     actions = [
       "dynamodb:BatchWriteItem",
       "dynamodb:UpdateItem",
+      "dynamodb:GetItem",
       "dynamodb:PutItem",
     ]
     resources = [
