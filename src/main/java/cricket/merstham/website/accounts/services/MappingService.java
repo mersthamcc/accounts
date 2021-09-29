@@ -88,7 +88,9 @@ public class MappingService {
                 .allocatedArtefacts(
                         List.of(
                                 new PostContactPaymentsContactPaymentAllocatedArtefacts()
-                                        .amount(tender.getAmount().doubleValue())
+                                        .amount(
+                                                tender.getAmount().doubleValue()
+                                                        - tender.getChangeGiven().doubleValue())
                                         .artefactId(salesInvoice.getId())))
                 .reference(salesInvoice.getReference());
     }
