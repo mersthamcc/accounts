@@ -57,17 +57,17 @@ dependencies {
     implementation "org.glassfish.jersey.inject:jersey-hk2:${dependencyVersions.jersey_version}"
 
     implementation "com.amazonaws:aws-lambda-java-core:1.2.1",
-            "com.amazonaws:aws-lambda-java-events:3.9.0",
-            "com.amazonaws:aws-java-sdk-dynamodb:1.12.14",
-            "software.amazon.awssdk:sqs:2.16.88"
+            "com.amazonaws:aws-lambda-java-events:3.11.0",
+            "com.amazonaws:aws-java-sdk-dynamodb:1.12.138",
+            "software.amazon.awssdk:sqs:2.17.102"
 
-    runtimeOnly 'org.apache.logging.log4j:log4j-slf4j18-impl:2.13.0'
-    runtimeOnly 'com.amazonaws:aws-lambda-java-log4j2:1.2.0'
+    runtimeOnly 'org.apache.logging.log4j:log4j-slf4j18-impl:2.17.0'
+    runtimeOnly 'com.amazonaws:aws-lambda-java-log4j2:1.5.1'
 
-    testImplementation "org.junit.jupiter:junit-jupiter-api:5.7.2"
-    testImplementation "org.assertj:assertj-core:3.19.0"
-    testImplementation "com.amazonaws:aws-lambda-java-tests:1.0.2"
-    testImplementation "org.mockito:mockito-core:3.10.0"
+    testImplementation "org.junit.jupiter:junit-jupiter-api:5.8.2"
+    testImplementation "org.assertj:assertj-core:3.22.0"
+    testImplementation "com.amazonaws:aws-lambda-java-tests:1.1.1"
+    testImplementation "org.mockito:mockito-core:3.12.4"
     testImplementation "org.hamcrest:hamcrest:2.2"
 
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.7.2"
