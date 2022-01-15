@@ -1,0 +1,527 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "annotation": {
+          "datasource": "GitHub",
+          "field": "title",
+          "options": {
+            "timeField": 2
+          },
+          "owner": "mersthamcc",
+          "queryType": "Pull_Requests",
+          "refId": "",
+          "repository": "accounts",
+          "timeField": "merged_at"
+        },
+        "datasource": "GitHub",
+        "datasourceId": 19,
+        "enable": true,
+        "iconColor": "red",
+        "limit": 100,
+        "name": "New Release",
+        "tags": [],
+        "type": "tags"
+      },
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 10,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "cloudwatch",
+        "uid": "z16RsgZ7z"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 0
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.3.3",
+      "targets": [
+        {
+          "alias": "",
+          "dimensions": {},
+          "expression": "",
+          "id": "",
+          "matchExact": true,
+          "metricEditorMode": 0,
+          "metricName": "ProcessingSuccessCount",
+          "metricQueryType": 0,
+          "namespace": "live-processing-metrics",
+          "period": "1d",
+          "queryType": "randomWalk",
+          "refId": "A",
+          "region": "default",
+          "statistic": "Sum"
+        }
+      ],
+      "title": "Successful Transfers",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "cloudwatch",
+        "uid": "z16RsgZ7z"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 0
+      },
+      "id": 10,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.3.3",
+      "targets": [
+        {
+          "alias": "",
+          "dimensions": {},
+          "expression": "",
+          "id": "",
+          "matchExact": true,
+          "metricEditorMode": 0,
+          "metricName": "MissingTenderWarningCount",
+          "metricQueryType": 0,
+          "namespace": "live-processing-metrics",
+          "period": "1d",
+          "queryType": "randomWalk",
+          "refId": "A",
+          "region": "default",
+          "statistic": "Sum"
+        }
+      ],
+      "title": "Missing Tenders",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "cloudwatch",
+        "uid": "z16RsgZ7z"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 0
+      },
+      "id": 7,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "sum"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "8.3.3",
+      "targets": [
+        {
+          "alias": "",
+          "dimensions": {},
+          "expression": "",
+          "id": "",
+          "matchExact": true,
+          "metricEditorMode": 0,
+          "metricName": "ProcessingErrorCount",
+          "metricQueryType": 0,
+          "namespace": "live-processing-metrics",
+          "period": "1d",
+          "queryType": "randomWalk",
+          "refId": "A",
+          "region": "default",
+          "statistic": "Sum"
+        }
+      ],
+      "title": "Transfer Errors",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "cloudwatch",
+        "uid": "z16RsgZ7z"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "left",
+            "barAlignment": -1,
+            "drawStyle": "bars",
+            "fillOpacity": 69,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "log": 2,
+              "type": "log"
+            },
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ProcessingErrorCount_Sum"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ProcessingSuccessCount_Sum"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "ProcessingSkipCount_Sum"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 9,
+      "options": {
+        "legend": {
+          "calcs": [
+            "sum"
+          ],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "pluginVersion": "8.0.6",
+      "targets": [
+        {
+          "alias": "",
+          "dimensions": {},
+          "expression": "",
+          "hide": false,
+          "id": "",
+          "matchExact": true,
+          "metricEditorMode": 0,
+          "metricName": "ProcessingSuccessCount",
+          "metricQueryType": 0,
+          "namespace": "live-processing-metrics",
+          "period": "1d",
+          "queryType": "randomWalk",
+          "refId": "Successful",
+          "region": "default",
+          "statistic": "Sum"
+        },
+        {
+          "alias": "",
+          "dimensions": {},
+          "expression": "",
+          "hide": false,
+          "id": "",
+          "matchExact": true,
+          "metricEditorMode": 0,
+          "metricName": "ProcessingSkipCount",
+          "metricQueryType": 0,
+          "namespace": "live-processing-metrics",
+          "period": "1d",
+          "queryType": "randomWalk",
+          "refId": "Skipped",
+          "region": "default",
+          "statistic": "Sum"
+        },
+        {
+          "alias": "",
+          "dimensions": {},
+          "expression": "",
+          "hide": false,
+          "id": "",
+          "matchExact": true,
+          "metricEditorMode": 0,
+          "metricName": "ProcessingErrorCount",
+          "metricQueryType": 0,
+          "namespace": "live-processing-metrics",
+          "period": "1d",
+          "refId": "Errors",
+          "region": "default",
+          "statistic": "Sum"
+        }
+      ],
+      "title": "Transactions Per Day",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "cloudwatch",
+        "uid": "z16RsgZ7z"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "displayMode": "auto"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "@message"
+            },
+            "properties": [
+              {
+                "id": "custom.width",
+                "value": 1520
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 24,
+        "x": 0,
+        "y": 17
+      },
+      "id": 2,
+      "options": {
+        "footer": {
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": []
+      },
+      "pluginVersion": "8.3.3",
+      "targets": [
+        {
+          "expression": "filter @message like /Exception|ERROR/\n| fields @timestamp, @message\n| sort @timestamp desc\n| limit 20",
+          "id": "",
+          "logGroupNames": [
+            "/aws/lambda/live-transaction-sqs-lambda"
+          ],
+          "namespace": "",
+          "queryMode": "Logs",
+          "queryType": "randomWalk",
+          "refId": "A",
+          "region": "default",
+          "statsGroups": []
+        }
+      ],
+      "title": "Epos Transfer Errors",
+      "transparent": true,
+      "type": "table"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 34,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Accounts - Epos Transfer",
+  "uid": "0vKBA0nnk",
+  "version": 8,
+  "weekStart": ""
+}

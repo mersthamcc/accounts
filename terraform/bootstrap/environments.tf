@@ -17,26 +17,6 @@ resource "tfe_workspace" "accounting" {
   terraform_version     = "1.0.3"
 }
 
-resource "tfe_variable" "aws_access_key" {
-  count = length(local.workspaces)
-
-  key          = "aws_access_key"
-  value        = var.aws_access_key
-  category     = "terraform"
-  workspace_id = tfe_workspace.accounting[count.index].id
-  sensitive    = true
-}
-
-resource "tfe_variable" "aws_secret_key" {
-  count = length(local.workspaces)
-
-  key          = "aws_secret_key"
-  value        = var.aws_secret_key
-  category     = "terraform"
-  workspace_id = tfe_workspace.accounting[count.index].id
-  sensitive    = true
-}
-
 resource "tfe_variable" "epos_api_key" {
   count = length(local.workspaces)
 

@@ -1,14 +1,17 @@
-variable "aws_access_key" {
-  description = "Your AWS Access token"
+variable "aws_access_key_id" {
+  description = "AWS access key"
 }
 
-variable "aws_secret_key" {
-  description = "Your AWS Access secret"
+variable "aws_secret_access_key" {
+  description = "AWS access secret key"
 }
 
 variable "aws_region" {
   description = "The AWS region in which to create resources"
-  default     = "eu-west-2"
+}
+
+variable "aws_session_token" {
+  description = "AWS Session Token"
 }
 
 variable "epos_api_key" {
