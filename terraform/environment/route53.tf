@@ -1,6 +1,14 @@
+resource "aws_route53_zone" "accounting" {
+  name = "${var.subdomain}.${var.domain}"
+}
+
 resource "aws_acm_certificate" "api" {
-  domain_name       = "${var.hostname}.${data.terraform_remote_state.accounts_state.outputs.accounting_zone_name}"
+  domain_name       = "${var.hostname}.${aws_route53_zone.accounting.name}"
   validation_method = "DNS"
+
+  depends_on = [
+    digitalocean_record.nameservers
+  ]
 }
 
 resource "aws_route53_record" "api_certificate_validation" {
@@ -17,18 +25,22 @@ resource "aws_route53_record" "api_certificate_validation" {
   records         = [each.value.record]
   ttl             = 60
   type            = each.value.type
-  zone_id         = data.terraform_remote_state.accounts_state.outputs.accounting_zone_id
+  zone_id         = aws_route53_zone.accounting.id
 }
 
 resource "aws_acm_certificate_validation" "api" {
   certificate_arn         = aws_acm_certificate.api.arn
   validation_record_fqdns = [for record in aws_route53_record.api_certificate_validation : record.fqdn]
+
+  depends_on = [
+    digitalocean_record.nameservers
+  ]
 }
 
 resource "aws_route53_record" "api" {
   name    = aws_api_gateway_domain_name.api.domain_name
   type    = "A"
-  zone_id = data.terraform_remote_state.accounts_state.outputs.accounting_zone_id
+  zone_id = aws_route53_zone.accounting.id
 
   alias {
     evaluate_target_health = true

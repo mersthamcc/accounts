@@ -89,7 +89,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: ${{ secrets.AWS_DEPLOYER_ROLE }}
+          role-to-assume: ${{ secrets.ACCOUNTS_AWS_DEPLOYER_ROLE }}
           role-session-name: github-actions-pr-test-${{ github.run_id }}-${{ github.run_number }}
           aws-region: eu-west-2
 

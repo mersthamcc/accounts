@@ -11,9 +11,13 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 3.0"
     }
+    digitalocean = {
+      source  = "digitalocean/digitalocean"
+      version = "2.10.1"
+    }
   }
 
-  required_version = "1.0.3"
+  required_version = "1.1.5"
 }
 
 provider "aws" {
@@ -30,13 +34,6 @@ provider "aws" {
   }
 }
 
-data "terraform_remote_state" "accounts_state" {
-  backend = "remote"
-  config = {
-    organization = "mersthamcc"
-
-    workspaces = {
-      name = "accounts"
-    }
-  }
+provider "digitalocean" {
+  token = var.digitalocean_token
 }

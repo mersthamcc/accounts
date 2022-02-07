@@ -1,3 +1,12 @@
+variable "digitalocean_token" {
+  description = "Your Digital Ocean API token"
+}
+
+variable "do_region" {
+  description = "The region to create the resources in"
+  default     = "lon1"
+}
+
 variable "aws_access_key_id" {
   description = "AWS access key"
 }
@@ -34,7 +43,7 @@ variable "environment_name" {
 
 variable "hostname" {
   description = "Hostname of the environment"
-  default     = "api-test"
+  default     = "api"
 }
 
 variable "default_customer_id" {
@@ -77,3 +86,7 @@ variable "play_cricket_team_mapping" {
 variable "match_fee_transfer_enabled" {
   default = true
 }
+
+variable "domain" {}
+
+variable "subdomain" {}

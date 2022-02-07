@@ -1,7 +1,7 @@
-environment_name = "live"
-hostname         = "api"
-
-
+aws_region                = "eu-west-2"
+environment_name          = "live"
+domain                    = "mersthamcc.co.uk"
+subdomain                 = "accounting"
 default_customer_id       = "d3601f9b174b11e691e20a5d7cf84c3e"
 default_ledger_account_id = "9a99f762180811e691e20a5d7cf84c3e"
 default_tax_rate_id       = "GB_STANDARD"

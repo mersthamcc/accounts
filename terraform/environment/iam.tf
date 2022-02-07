@@ -61,8 +61,8 @@ data "aws_iam_policy_document" "dynamo_policy_document" {
       "dynamodb:PutItem",
     ]
     resources = [
-      data.aws_dynamodb_table.config.arn,
-      data.aws_dynamodb_table.token.arn,
+      aws_dynamodb_table.config.arn,
+      aws_dynamodb_table.token.arn,
     ]
   }
 }

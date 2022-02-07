@@ -13,7 +13,6 @@ resource "aws_dynamodb_table" "config" {
   }
 }
 
-
 resource "aws_dynamodb_table" "token" {
   name         = "token"
   billing_mode = "PAY_PER_REQUEST"
