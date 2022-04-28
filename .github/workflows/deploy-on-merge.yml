@@ -24,7 +24,7 @@ jobs:
         run: echo "::set-output name=version::$(cat terraform/.terraform-version)"
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
+        uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: ${{ steps.getterraformversion.outputs.version }}
           cli_config_credentials_token: ${{ secrets.TF_TOKEN }}
@@ -32,7 +32,7 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: ${{ secrets.AWS_DEPLOYER_ROLE }}
+          role-to-assume: ${{ secrets.ACCOUNTS_ACCOUNT_DEPLOYER_ARN }}
           role-session-name: github-actions-merge-deploy-${{ github.run_id }}-${{ github.run_number }}
           aws-region: eu-west-2
 
@@ -73,7 +73,7 @@ jobs:
 
       - name: Copy live ZIP to S3
         run: |
-          aws s3 cp build/distributions/accounts.zip s3://mcc-accounts-deployment/live-accounts.zip
+          aws s3 cp build/distributions/accounts.zip s3://mcc-accounts-deployment-20220206220836183900000001/live-accounts.zip
 
       - name: Deploy bootstrap Terraform
         working-directory: terraform/bootstrap
