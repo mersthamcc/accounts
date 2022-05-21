@@ -233,8 +233,8 @@ public class MappingService {
                 .date(match.getMatchDate())
                 .reference(normalisePlayerName(p))
                 .details(p.getPlayerName())
-                .netAmount(5.00)
-                .totalAmount(5.00)
+                .netAmount(10.00)
+                .totalAmount(10.00)
                 .taxRateId("GB_EXEMPT");
     }
 
