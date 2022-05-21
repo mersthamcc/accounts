@@ -68,6 +68,16 @@ ledger_mappings = [
       }
     }
   },
+  {
+    M = {
+      "epos_value" = {
+        S = "100 Club Membership (Annual)"
+      }
+      "sage_value" = {
+        S = "ecb24610d47840f79bc2bf8ae56160fa"
+      }
+    }
+  }
 ]
 
 tax_rate_mapping = [
