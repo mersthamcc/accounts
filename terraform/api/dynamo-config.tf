@@ -1,9 +1,9 @@
 data "aws_dynamodb_table" "config" {
-  name = data.terraform_remote_state.accounts_state.outputs.dynamo_config_table_id
+  name = "config" // data.terraform_remote_state.accounts_state.outputs.dynamo_config_table_id
 }
 
 data "aws_dynamodb_table" "token" {
-  name = data.terraform_remote_state.accounts_state.outputs.dynamo_token_table_id
+  name = "token" // data.terraform_remote_state.accounts_state.outputs.dynamo_token_table_id
 }
 
 resource "aws_dynamodb_table_item" "test-config" {

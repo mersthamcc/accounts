@@ -1,6 +1,6 @@
 resource "aws_api_gateway_domain_name" "api" {
   regional_certificate_arn = aws_acm_certificate_validation.api.certificate_arn
-  domain_name              = "${var.hostname}.${data.terraform_remote_state.accounts_state.outputs.accounting_zone_name}"
+  domain_name              = "" // "${var.hostname}.${data.terraform_remote_state.accounts_state.outputs.accounting_zone_name}"
 
   security_policy = "TLS_1_2"
 

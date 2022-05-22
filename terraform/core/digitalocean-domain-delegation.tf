@@ -10,12 +10,12 @@ data "terraform_remote_state" "default" {
 }
 
 resource "digitalocean_record" "nameservers" {
-  count = length(aws_route53_zone.accounting.name_servers)
+  for_each = toset(aws_route53_zone.accounting.name_servers)
 
   name   = "accounting"
   domain = data.terraform_remote_state.default.outputs.main_domain_zone_id
   type   = "NS"
-  value  = "${aws_route53_zone.accounting.name_servers[count.index]}."
+  value  = "${each.value}."
   ttl    = "86400"
 
   depends_on = [

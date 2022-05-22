@@ -19,15 +19,6 @@ output "accounting_zone_name" {
   value = aws_route53_zone.accounting.name
 }
 
-
-output "dynamo_config_table_id" {
-  value = aws_dynamodb_table.config.id
-}
-
-output "dynamo_token_table_id" {
-  value = aws_dynamodb_table.token.id
-}
-
 output "deployment_bucket_name" {
   value = aws_s3_bucket.lambda_source.bucket
 }

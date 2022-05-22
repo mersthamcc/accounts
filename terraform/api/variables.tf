@@ -1,17 +1,21 @@
-variable "aws_access_key_id" {
-  description = "AWS access key"
-}
+#variable "aws_access_key_id" {
+#  description = "AWS access key"
+#}
+#
+#variable "aws_secret_access_key" {
+#  description = "AWS access secret key"
+#}
+#
+#variable "aws_region" {
+#  description = "The AWS region in which to create resources"
+#}
+#
+#variable "aws_session_token" {
+#  description = "AWS Session Token"
+#}
 
-variable "aws_secret_access_key" {
-  description = "AWS access secret key"
-}
-
-variable "aws_region" {
-  description = "The AWS region in which to create resources"
-}
-
-variable "aws_session_token" {
-  description = "AWS Session Token"
+variable "digitalocean_token" {
+  description = "Your Digital Ocean API token"
 }
 
 variable "epos_api_key" {

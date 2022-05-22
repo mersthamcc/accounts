@@ -3,32 +3,29 @@ terraform {
     organization = "mersthamcc"
 
     workspaces {
-      name = "accounts"
+      name = "mersthamcc-dev-accounts-core"
     }
   }
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 3.0"
+      version = "4.15.1"
     }
 
     digitalocean = {
       source  = "digitalocean/digitalocean"
-      version = "2.10.1"
+      version = "2.19.0"
     }
 
     tfe = {
       source  = "hashicorp/tfe"
-      version = "0.25.3"
+      version = "0.31.0"
     }
   }
 }
 
 provider "aws" {
-  access_key = var.aws_access_key_id
-  secret_key = var.aws_secret_access_key
-  token      = var.aws_session_token
-  region     = var.aws_region
+  region = var.aws_region
 }
 
 provider "digitalocean" {
@@ -38,3 +35,5 @@ provider "digitalocean" {
 provider "tfe" {
   token = var.terraform_token
 }
+
+data "aws_billing_service_account" "current" {}
