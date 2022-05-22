@@ -1,4 +1,3 @@
-
 workspaces {
-  name = "accounts-live"
+  name = "mersthamcc-accounts-accounts-api"
 }

@@ -19,19 +19,19 @@ terraform {
     }
 
     random = {
-      source = "hashicorp/random"
+      source  = "hashicorp/random"
       version = "3.2.0"
     }
 
     time = {
-      source = "hashicorp/time"
+      source  = "hashicorp/time"
       version = "0.7.2"
     }
   }
 }
 
 provider "aws" {
-  region     = "eu-west-2"
+  region = "eu-west-2"
 
   default_tags {
     tags = {

@@ -6,6 +6,7 @@ terraform {
       name = "mersthamcc-dev-accounts-core"
     }
   }
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"

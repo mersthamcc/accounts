@@ -144,8 +144,8 @@ resource "aws_iam_role_policy_attachment" "queue_processor_lambda_audit_dynamo" 
 }
 
 resource "aws_iam_role" "match_fee_lambda_iam_role" {
-  name_prefix = "match-fee-lambda-role-"
-  path        = "/${var.environment}/lambda/"
+  name_prefix        = "match-fee-lambda-role-"
+  path               = "/${var.environment}/lambda/"
   assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
 }
 
