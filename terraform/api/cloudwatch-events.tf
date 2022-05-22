@@ -4,7 +4,7 @@ resource "aws_lambda_function" "match_fee_lambda" {
   s3_key            = data.aws_s3_bucket_object.lambda_source.key
   s3_object_version = data.aws_s3_bucket_object.lambda_source.version_id
 
-  function_name = "${var.environment_name}-match-fee-transfer-schedule"
+  function_name = "${var.environment}-match-fee-transfer-schedule"
   role          = aws_iam_role.match_fee_lambda_iam_role.arn
   handler       = "cricket.merstham.website.accounts.lambda.MatchFeeTransferScheduled::handleRequest"
   timeout       = 300
@@ -13,7 +13,7 @@ resource "aws_lambda_function" "match_fee_lambda" {
 
   environment {
     variables = {
-      CONFIG_NAME = var.environment_name
+      CONFIG_NAME = var.environment
     }
   }
 
@@ -26,7 +26,7 @@ resource "aws_lambda_function" "refresh_token_lambda" {
   s3_key            = data.aws_s3_bucket_object.lambda_source.key
   s3_object_version = data.aws_s3_bucket_object.lambda_source.version_id
 
-  function_name = "${var.environment_name}-refresh-tokens-schedule"
+  function_name = "${var.environment}-refresh-tokens-schedule"
   role          = aws_iam_role.match_fee_lambda_iam_role.arn
   handler       = "cricket.merstham.website.accounts.lambda.RefreshSageTokenScheduled::handleRequest"
   timeout       = 300
@@ -35,7 +35,7 @@ resource "aws_lambda_function" "refresh_token_lambda" {
 
   environment {
     variables = {
-      CONFIG_NAME = var.environment_name
+      CONFIG_NAME = var.environment
     }
   }
 
@@ -53,7 +53,7 @@ resource "aws_cloudwatch_log_group" "refresh_token_lambda_log_group" {
 }
 
 resource "aws_cloudwatch_event_rule" "match_fee_schedule" {
-  name                = "${var.environment_name}-match-fee-transfer-schedule"
+  name                = "${var.environment}-match-fee-transfer-schedule"
   schedule_expression = "cron(0 6 ? * FRI *)"
   is_enabled          = var.match_fee_transfer_enabled
 }
@@ -73,7 +73,7 @@ resource "aws_lambda_permission" "allow_cloudwatch_to_call_match_fee_lambda" {
 }
 
 resource "aws_cloudwatch_event_rule" "refresh_tokens_schedule" {
-  name                = "${var.environment_name}-refresh-tokens-schedule"
+  name                = "${var.environment}-refresh-tokens-schedule"
   schedule_expression = "cron(0 2 ? * * *0)"
   is_enabled          = true
 }

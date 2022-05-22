@@ -1,4 +1,0 @@
-
-workspaces {
-  name = "accounts-live"
-}

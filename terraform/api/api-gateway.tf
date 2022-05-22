@@ -1,6 +1,6 @@
 resource "aws_api_gateway_domain_name" "api" {
   regional_certificate_arn = aws_acm_certificate_validation.api.certificate_arn
-  domain_name              = "${var.hostname}.${data.terraform_remote_state.accounts_state.outputs.accounting_zone_name}"
+  domain_name              = "api.${data.terraform_remote_state.accounts_core_state.outputs.accounting_zone_name}"
 
   security_policy = "TLS_1_2"
 
@@ -14,7 +14,7 @@ resource "aws_api_gateway_domain_name" "api" {
 }
 
 resource "aws_api_gateway_rest_api" "api" {
-  name = "${var.environment_name}-accounting-http-api"
+  name = "${var.environment}-accounting-http-api"
 }
 
 resource "aws_api_gateway_deployment" "deployment" {
@@ -43,7 +43,7 @@ resource "aws_api_gateway_deployment" "deployment" {
 resource "aws_api_gateway_stage" "api_stage" {
   deployment_id = aws_api_gateway_deployment.deployment.id
   rest_api_id   = aws_api_gateway_rest_api.api.id
-  stage_name    = var.environment_name
+  stage_name    = var.environment
 
   depends_on = [
     module.sage_endpoint,
