@@ -69,7 +69,7 @@ jobs:
         run: |
           terraform init -input=false \
             -backend-config=live-backend.hcl
-          terraform apply -auto-approve
+          terraform apply -auto-approve -var-file live.tfvars
 
           echo "::set-output name=bucket_name::$(terraform output -raw deployment_bucket_name)"
 
