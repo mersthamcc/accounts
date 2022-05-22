@@ -61,7 +61,7 @@ jobs:
         run: ./gradlew buildZip
 
       - name: Deploy core Terraform
-        id: deploy_core
+        id: core_deploy
         working-directory: terraform/core
         env:
           TF_VAR_terraform_token: ${{ secrets.TF_TOKEN }}
