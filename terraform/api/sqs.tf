@@ -1,5 +1,5 @@
 resource "aws_sqs_queue" "transactions" {
-  name                       = "${var.environment_name}-transactions"
+  name                       = "${var.environment}-transactions"
   max_message_size           = 262144
   message_retention_seconds  = 1209600
   visibility_timeout_seconds = 900
@@ -77,18 +77,16 @@ resource "aws_lambda_function" "process_transactions_sqs_lambda" {
   s3_key            = data.aws_s3_bucket_object.lambda_source.key
   s3_object_version = data.aws_s3_bucket_object.lambda_source.version_id
 
-  function_name = "${var.environment_name}-transaction-sqs-lambda"
+  function_name = "${var.environment}-transaction-sqs-lambda"
   role          = aws_iam_role.queue_processor_lambda_iam_role.arn
   handler       = "cricket.merstham.website.accounts.lambda.ProcessTransactions::handleRequest"
   timeout       = 600
   memory_size   = 512
   runtime       = "java11"
 
-  reserved_concurrent_executions = 1
-
   environment {
     variables = {
-      CONFIG_NAME = var.environment_name
+      CONFIG_NAME = var.environment
     }
   }
 

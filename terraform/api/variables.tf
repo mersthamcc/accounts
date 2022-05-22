@@ -1,21 +1,16 @@
-#variable "aws_access_key_id" {
-#  description = "AWS access key"
-#}
-#
-#variable "aws_secret_access_key" {
-#  description = "AWS access secret key"
-#}
-#
-#variable "aws_region" {
-#  description = "The AWS region in which to create resources"
-#}
-#
-#variable "aws_session_token" {
-#  description = "AWS Session Token"
-#}
+variable "aws_account_name" {}
+
+variable "aws_region" {
+  default = "eu-west-2"
+}
 
 variable "digitalocean_token" {
   description = "Your Digital Ocean API token"
+}
+
+variable "environment" {
+  description = "A logical name for this environment (e.g. test, live)"
+  default     = "test"
 }
 
 variable "epos_api_key" {
@@ -29,16 +24,6 @@ variable "sage_api_client_id" {
 }
 variable "sage_api_client_secret" {
   description = "SageOne API Client Secret"
-}
-
-variable "environment_name" {
-  description = "Name of the environment"
-  default     = "test"
-}
-
-variable "hostname" {
-  description = "Hostname of the environment"
-  default     = "api-test"
 }
 
 variable "default_customer_id" {

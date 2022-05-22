@@ -1,5 +1,5 @@
 resource "aws_acm_certificate" "api" {
-  domain_name       = "xxxxx" // "${var.hostname}.${data.terraform_remote_state.accounts_state.outputs.accounting_zone_name}"
+  domain_name       = "api.${data.terraform_remote_state.accounts_core_state.outputs.accounting_zone_name}"
   validation_method = "DNS"
 }
 
@@ -17,7 +17,7 @@ resource "aws_route53_record" "api_certificate_validation" {
   records         = [each.value.record]
   ttl             = 60
   type            = each.value.type
-  zone_id         = "xxxxx" // data.terraform_remote_state.accounts_state.outputs.accounting_zone_id
+  zone_id         = data.terraform_remote_state.accounts_core_state.outputs.accounting_zone_id
 }
 
 resource "aws_acm_certificate_validation" "api" {
@@ -28,7 +28,7 @@ resource "aws_acm_certificate_validation" "api" {
 resource "aws_route53_record" "api" {
   name    = aws_api_gateway_domain_name.api.domain_name
   type    = "A"
-  zone_id = "xxxxx" // data.terraform_remote_state.accounts_state.outputs.accounting_zone_id
+  zone_id = data.terraform_remote_state.accounts_core_state.outputs.accounting_zone_id
 
   alias {
     evaluate_target_health = true

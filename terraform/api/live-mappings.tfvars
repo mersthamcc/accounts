@@ -1,6 +1,5 @@
-environment_name = "live"
-hostname         = "api"
-
+aws_account_name = "mersthamcc-accounts"
+environment      = "live"
 
 default_customer_id       = "d3601f9b174b11e691e20a5d7cf84c3e"
 default_ledger_account_id = "9a99f762180811e691e20a5d7cf84c3e"

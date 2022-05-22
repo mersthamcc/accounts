@@ -1,2 +1,2 @@
-aws_account_name = "mcc-accounts"
-domain           = "accounting.mersthamcc.co.uk"
+aws_account_name = "mersthamcc-accounts"
+domain           = "accounting"

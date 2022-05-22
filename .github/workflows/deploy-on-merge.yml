@@ -78,8 +78,8 @@ jobs:
       - name: Deploy bootstrap Terraform
         working-directory: terraform/bootstrap
         run: |
+          mv live.tfvars live.auto.tfvars
           terraform init -input=false
-
           terraform apply -auto-approve
 
       - name: Deploy live build to AWS

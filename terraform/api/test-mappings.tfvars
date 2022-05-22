@@ -1,3 +1,5 @@
+aws_account_name = "mersthamcc-dev"
+
 default_customer_id        = "d49c014e77c911e797950a57719b2edb"
 default_ledger_account_id  = "3a3c2fad180911e691e20a5d7cf84c3e"
 default_tax_rate_id        = "GB_STANDARD"

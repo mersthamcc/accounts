@@ -231,6 +231,15 @@ jobs:
           aws_session_token="${{ env.AWS_SESSION_TOKEN }}"
           EOF
 
+      - name: Deploy bootstrap Terraform
+        working-directory: terraform/bootstrap
+        env:
+          TF_TOKEN: ${{ secrets.TF_TOKEN }}
+        run: |
+          mv test.tfvars test.auto.tfvars
+          terraform init -input=false
+          terraform apply -auto-approve
+
       - name: Deploy test build to AWS
         working-directory: terraform/environment
         env:

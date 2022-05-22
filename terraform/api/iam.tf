@@ -15,7 +15,9 @@ data "aws_iam_policy_document" "assume_role_policy" {
 }
 
 resource "aws_iam_role" "lambda_iam_role" {
-  name               = "${var.environment_name}-standard-lambda-role"
+  name_prefix = "common-lambda-role-"
+  path        = "/${var.environment}/lambda/"
+
   assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
 }
 
@@ -34,8 +36,8 @@ data "aws_iam_policy_document" "logging_policy" {
 }
 
 resource "aws_iam_policy" "endpoint_logging_policy" {
-  name        = "${var.environment_name}-standard-lambda-logging"
-  path        = "/"
+  name_prefix = "common-lambda-logging-"
+  path        = "/${var.environment}/lambda/"
   description = "IAM policy for logging from a lambda"
   policy      = data.aws_iam_policy_document.logging_policy.json
 }
@@ -61,15 +63,15 @@ data "aws_iam_policy_document" "dynamo_policy_document" {
       "dynamodb:PutItem",
     ]
     resources = [
-      data.aws_dynamodb_table.config.arn,
-      data.aws_dynamodb_table.token.arn,
+      aws_dynamodb_table.config.arn,
+      aws_dynamodb_table.token.arn,
     ]
   }
 }
 
 resource "aws_iam_policy" "lambda_dynamo_policy" {
-  name        = "${var.environment_name}-standard-lambda-dynamo-policy"
-  path        = "/"
+  name_prefix = "common-lambda-dynamo-policy-"
+  path        = "/${var.environment}/lambda/"
   description = "IAM policy for managing Dynamo connection for a lambda"
   policy      = data.aws_iam_policy_document.dynamo_policy_document.json
 }
@@ -80,7 +82,8 @@ resource "aws_iam_role_policy_attachment" "lambda_dynamo" {
 }
 
 resource "aws_iam_role" "end_of_day_lambda_iam_role" {
-  name = "${var.environment_name}-end-of-day-lambda-role"
+  name_prefix = "end-of-day-lambda-role-"
+  path        = "/${var.environment}/lambda/"
 
   assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
 }
@@ -112,14 +115,15 @@ data "aws_iam_policy_document" "audit_dynamo_policy_document" {
 }
 
 resource "aws_iam_policy" "lambda_audit_dynamo_policy" {
-  name        = "${var.environment_name}-audit-lambda-dynamo-policy"
-  path        = "/"
+  name_prefix = "audit-lambda-dynamo-policy-"
+  path        = "/${var.environment}/lambda/"
   description = "IAM policy for managing audit Dynamo table connection for a lambda"
   policy      = data.aws_iam_policy_document.audit_dynamo_policy_document.json
 }
 
 resource "aws_iam_role" "queue_processor_lambda_iam_role" {
-  name = "${var.environment_name}-queue-processor-lambda-role"
+  name_prefix = "queue-processor-lambda-role-"
+  path        = "/${var.environment}/lambda/"
 
   assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
 }
@@ -140,8 +144,8 @@ resource "aws_iam_role_policy_attachment" "queue_processor_lambda_audit_dynamo" 
 }
 
 resource "aws_iam_role" "match_fee_lambda_iam_role" {
-  name = "${var.environment_name}-match-fee-lambda-role"
-
+  name_prefix = "match-fee-lambda-role-"
+  path        = "/${var.environment}/lambda/"
   assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
 }
 
