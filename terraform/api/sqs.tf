@@ -3,6 +3,17 @@ resource "aws_sqs_queue" "transactions" {
   max_message_size           = 262144
   message_retention_seconds  = 1209600
   visibility_timeout_seconds = 900
+
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.transactions_dlq.arn
+    maxReceiveCount     = 3
+  })
+}
+
+resource "aws_sqs_queue" "transactions_dlq" {
+  name                       = "${var.environment}-transactions-dlq"
+  max_message_size           = 262144
+  message_retention_seconds  = 1209600
 }
 
 resource "time_sleep" "wait_60_seconds" {
