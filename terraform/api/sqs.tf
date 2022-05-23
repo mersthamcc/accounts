@@ -11,9 +11,9 @@ resource "aws_sqs_queue" "transactions" {
 }
 
 resource "aws_sqs_queue" "transactions_dlq" {
-  name                       = "${var.environment}-transactions-dlq"
-  max_message_size           = 262144
-  message_retention_seconds  = 1209600
+  name                      = "${var.environment}-transactions-dlq"
+  max_message_size          = 262144
+  message_retention_seconds = 1209600
 }
 
 resource "time_sleep" "wait_60_seconds" {
@@ -110,10 +110,10 @@ resource "aws_lambda_event_source_mapping" "lambda_sqs_mapping" {
   event_source_arn = aws_sqs_queue.transactions.arn
   function_name    = aws_lambda_function.process_transactions_sqs_lambda.arn
 
-  batch_size = 250
+  batch_size                         = 250
   maximum_batching_window_in_seconds = 300
 
-  enabled    = true
+  enabled = true
 
   depends_on = [
     aws_sqs_queue.transactions,
