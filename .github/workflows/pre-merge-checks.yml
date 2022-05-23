@@ -182,7 +182,6 @@ jobs:
       - uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: ${{ steps.getterraformversion.outputs.version }}
-          terraform_wrapper: false
           cli_config_credentials_token: ${{ secrets.TF_TOKEN }}
 
       - name: Configure AWS Credentials
