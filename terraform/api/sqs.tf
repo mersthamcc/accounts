@@ -92,7 +92,7 @@ resource "aws_lambda_function" "process_transactions_sqs_lambda" {
   role          = aws_iam_role.queue_processor_lambda_iam_role.arn
   handler       = "cricket.merstham.website.accounts.lambda.ProcessTransactions::handleRequest"
   timeout       = 600
-  memory_size   = 512
+  memory_size   = 2048
   runtime       = "java11"
 
   environment {

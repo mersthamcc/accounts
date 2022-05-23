@@ -8,7 +8,7 @@ resource "aws_lambda_function" "endpoint_lambda" {
   role          = var.lambda_role_arn
   handler       = var.handler_function_name
   timeout       = var.timeout
-  memory_size   = 512
+  memory_size   = 3072
 
   environment {
     variables = var.handler_environment_variables
