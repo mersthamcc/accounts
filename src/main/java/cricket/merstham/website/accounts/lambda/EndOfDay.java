@@ -8,16 +8,23 @@ import cricket.merstham.website.accounts.configuration.ApiConfiguration;
 import cricket.merstham.website.accounts.configuration.Configuration;
 import cricket.merstham.website.accounts.model.ApiResponse;
 import cricket.merstham.website.accounts.model.EposNowEndOfDay;
-import cricket.merstham.website.accounts.services.*;
+import cricket.merstham.website.accounts.services.ConfigurationService;
+import cricket.merstham.website.accounts.services.DynamoService;
+import cricket.merstham.website.accounts.services.EposNowApiClient;
+import cricket.merstham.website.accounts.services.EposNowService;
+import cricket.merstham.website.accounts.services.SerializationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import software.amazon.awssdk.services.sqs.model.SendMessageResponse;
+import software.amazon.awssdk.core.SdkBytes;
+import software.amazon.awssdk.services.lambda.LambdaAsyncClient;
+import software.amazon.awssdk.services.lambda.model.InvocationType;
+import software.amazon.awssdk.services.lambda.model.InvokeRequest;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
 
 import static javax.ws.rs.core.HttpHeaders.AUTHORIZATION;
+import static software.amazon.awssdk.regions.Region.EU_WEST_2;
 
 public class EndOfDay
         implements RequestHandler<APIGatewayProxyRequestEvent, APIGatewayProxyResponseEvent> {
@@ -26,8 +33,8 @@ public class EndOfDay
     private final EposNowService eposNowService;
     private final ApiConfiguration apiConfiguration;
     private final SerializationService serializationService;
-    private final SqsService sqsService;
     private final ConfigurationService configurationService;
+    private final LambdaAsyncClient client;
 
     public EndOfDay() {
         ConfigurationService configurationService = new ConfigurationService();
@@ -36,9 +43,8 @@ public class EndOfDay
         this.apiConfiguration = config.getApiConfiguration();
         this.eposNowService = new EposNowService(new EposNowApiClient(apiConfiguration));
         this.serializationService = new SerializationService();
-        this.sqsService =
-                new SqsService(configurationService, serializationService, apiConfiguration);
         this.configurationService = new ConfigurationService();
+        this.client = LambdaAsyncClient.builder().region(EU_WEST_2).build();
     }
 
     @Override
@@ -91,29 +97,18 @@ public class EndOfDay
 
         if ((!apiConfiguration.isEposValidateEndOfDay())
                 || eposNowService.validateEndOfDay(endOfDay)) {
-            var transactions = eposNowService.getTransactionsForDay(endOfDay);
-            LOG.info("Retrieved {} transactions from EposNow", transactions.size());
-            int count = 0;
-            for (var t : transactions) {
-                String messageId = UUID.randomUUID().toString();
-                LOG.info(
-                        "Sending transaction {} to queue {}",
-                        t.getBarcode(),
-                        apiConfiguration.getQueueUrl());
-                try {
-                    SendMessageResponse result = sqsService.sendMessage(t, messageId, "epos");
-                    LOG.info(
-                            "Transaction {} on queue with message ID {} sequence {}",
-                            t.getBarcode(),
-                            result.messageId(),
-                            result.sequenceNumber());
-                    count++;
-                } catch (Exception ex) {
-                    LOG.error("Error sending to queue", ex);
-                    throw ex;
-                }
-            }
-            LOG.info("{} messages successfully sent to queue", count);
+            client.invoke(
+                            InvokeRequest.builder()
+                                    .functionName(System.getenv("PROCESSING_LAMBDA_ARN"))
+                                    .invocationType(InvocationType.EVENT)
+                                    .payload(SdkBytes.fromUtf8String(input.getBody()))
+                                    .build())
+                    .whenComplete(
+                            (invokeResponse, throwable) ->
+                                    LOG.info(
+                                            "Processing Lambda returned "
+                                                    + invokeResponse.logResult(),
+                                            throwable));
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(200)
                     .withBody(
