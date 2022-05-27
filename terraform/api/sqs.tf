@@ -110,7 +110,7 @@ resource "aws_lambda_event_source_mapping" "lambda_sqs_mapping" {
   event_source_arn = aws_sqs_queue.transactions.arn
   function_name    = aws_lambda_function.process_transactions_sqs_lambda.arn
 
-  batch_size                         = 250
+  batch_size                         = 1000
   maximum_batching_window_in_seconds = 300
 
   enabled = true

@@ -16,10 +16,11 @@ import cricket.merstham.website.accounts.services.SerializationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.core.SdkBytes;
-import software.amazon.awssdk.services.lambda.LambdaAsyncClient;
+import software.amazon.awssdk.services.lambda.LambdaClient;
 import software.amazon.awssdk.services.lambda.model.InvocationType;
 import software.amazon.awssdk.services.lambda.model.InvokeRequest;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -34,7 +35,7 @@ public class EndOfDay
     private final ApiConfiguration apiConfiguration;
     private final SerializationService serializationService;
     private final ConfigurationService configurationService;
-    private final LambdaAsyncClient client;
+    private final LambdaClient client;
 
     public EndOfDay() {
         ConfigurationService configurationService = new ConfigurationService();
@@ -44,7 +45,7 @@ public class EndOfDay
         this.eposNowService = new EposNowService(new EposNowApiClient(apiConfiguration));
         this.serializationService = new SerializationService();
         this.configurationService = new ConfigurationService();
-        this.client = LambdaAsyncClient.builder().region(EU_WEST_2).build();
+        this.client = LambdaClient.builder().region(EU_WEST_2).build();
     }
 
     @Override
@@ -97,18 +98,18 @@ public class EndOfDay
 
         if ((!apiConfiguration.isEposValidateEndOfDay())
                 || eposNowService.validateEndOfDay(endOfDay)) {
-            client.invoke(
+            var invokeResult =
+                    client.invoke(
                             InvokeRequest.builder()
                                     .functionName(System.getenv("PROCESSING_LAMBDA_ARN"))
-                                    .invocationType(InvocationType.EVENT)
+                                    .qualifier("$LATEST")
                                     .payload(SdkBytes.fromUtf8String(input.getBody()))
-                                    .build())
-                    .whenComplete(
-                            (invokeResponse, throwable) ->
-                                    LOG.info(
-                                            "Processing Lambda returned "
-                                                    + invokeResponse.logResult(),
-                                            throwable));
+                                    .invocationType(InvocationType.EVENT)
+                                    .build());
+            LOG.info(
+                    "Invoke result {}: {}",
+                    invokeResult.statusCode(),
+                    invokeResult.payload().asString(StandardCharsets.UTF_8));
             return new APIGatewayProxyResponseEvent()
                     .withStatusCode(200)
                     .withBody(

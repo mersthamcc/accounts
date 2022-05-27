@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 import static java.text.MessageFormat.format;
+import static java.util.Objects.isNull;
 
 public class EposNowService {
 
@@ -68,6 +69,13 @@ public class EposNowService {
             refreshProductList();
         }
         return productCache.get(productId);
+    }
+
+    public String getProductDescription(BigInteger productId) {
+        if (isNull(productId)) return "** unknown **";
+        var product = getProduct(productId.intValue());
+        if (isNull(product)) return "** product not found **";
+        return product.getDescription();
     }
 
     private void refreshProductList() {

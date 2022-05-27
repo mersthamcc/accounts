@@ -185,8 +185,7 @@ public class MappingService {
     private PostSalesCreditNotesSalesCreditNoteCreditNoteLines createLine(
             EposNowTransaction.TransactionItem i) {
         return new PostSalesCreditNotesSalesCreditNoteCreditNoteLines()
-                .description(
-                        eposNowService.getProduct(i.getProductId().intValue()).getDescription())
+                .description(eposNowService.getProductDescription(i.getProductId()))
                 .quantity(i.getQuantity().abs().doubleValue())
                 .unitPrice(
                         i.getUnitPriceExcTax()

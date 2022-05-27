@@ -15,9 +15,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.sqs.model.SendMessageResponse;
 
+import java.io.InputStream;
 import java.util.UUID;
 
-public class ProcessEndOfDay implements RequestHandler<String, Integer> {
+public class ProcessEndOfDay implements RequestHandler<InputStream, Integer> {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProcessEndOfDay.class);
 
@@ -38,8 +39,15 @@ public class ProcessEndOfDay implements RequestHandler<String, Integer> {
     }
 
     @Override
-    public Integer handleRequest(String input, Context context) {
-        var endOfDay = serializationService.deserialise(input, EposNowEndOfDay.class);
+    public Integer handleRequest(InputStream input, Context context) {
+
+        EposNowEndOfDay endOfDay = serializationService.deserialise(input, EposNowEndOfDay.class);
+
+        LOG.info("Processing EndOfDay request: {}", endOfDay.getId());
+        LOG.info(
+                "Getting transactions betweenn {} and {}",
+                endOfDay.getStartTime(),
+                endOfDay.getEndTime());
         var transactions = eposNowService.getTransactionsForDay(endOfDay);
         LOG.info("Retrieved {} transactions from EposNow", transactions.size());
         int count = 0;

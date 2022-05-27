@@ -182,11 +182,23 @@ data "aws_iam_policy_document" "allow_function_invoke" {
     effect = "Allow"
 
     actions = [
-      "lambda:Invoke"
+      "lambda:InvokeFunction"
     ]
 
     resources = [
-      aws_lambda_function.process_end_of_day_lambda.arn
+      "${aws_lambda_function.process_end_of_day_lambda.arn}:$LATEST"
     ]
   }
+}
+
+resource "aws_iam_policy" "invoke_processor_policy" {
+  name_prefix = "invoke-processor-"
+  path        = "/${var.environment}/lambda/"
+  description = "IAM policy to allow invocation of the end of day processor function"
+  policy      = data.aws_iam_policy_document.allow_function_invoke.json
+}
+
+resource "aws_iam_role_policy_attachment" "end_of_day_endpoint_lambda_invoke" {
+  role       = aws_iam_role.end_of_day_endpoint_lambda_iam_role.name
+  policy_arn = aws_iam_policy.invoke_processor_policy.arn
 }
