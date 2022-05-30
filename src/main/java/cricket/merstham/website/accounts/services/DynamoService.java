@@ -29,6 +29,8 @@ public class DynamoService {
                 new DynamoDBMapper(
                         dynamoDB,
                         new DynamoDBMapperConfig.Builder()
+                                .withConsistentReads(
+                                        DynamoDBMapperConfig.ConsistentReads.CONSISTENT)
                                 .withTableNameOverride(
                                         DynamoDBMapperConfig.TableNameOverride.withTableNamePrefix(
                                                 configurationService
