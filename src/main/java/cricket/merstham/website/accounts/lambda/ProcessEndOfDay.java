@@ -16,7 +16,8 @@ import org.slf4j.LoggerFactory;
 import software.amazon.awssdk.services.sqs.model.SendMessageResponse;
 
 import java.io.InputStream;
-import java.util.UUID;
+
+import static java.text.MessageFormat.format;
 
 public class ProcessEndOfDay implements RequestHandler<InputStream, Integer> {
 
@@ -45,14 +46,14 @@ public class ProcessEndOfDay implements RequestHandler<InputStream, Integer> {
 
         LOG.info("Processing EndOfDay request: {}", endOfDay.getId());
         LOG.info(
-                "Getting transactions betweenn {} and {}",
+                "Getting transactions between {} and {}",
                 endOfDay.getStartTime(),
                 endOfDay.getEndTime());
         var transactions = eposNowService.getTransactionsForDay(endOfDay);
         LOG.info("Retrieved {} transactions from EposNow", transactions.size());
         int count = 0;
         for (var t : transactions) {
-            String messageId = UUID.randomUUID().toString();
+            String messageId = format("{0}-{1}", endOfDay.getId(), t.getBarcode());
             LOG.info(
                     "Sending transaction {} to queue {}",
                     t.getBarcode(),

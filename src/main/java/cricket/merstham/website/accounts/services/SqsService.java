@@ -47,6 +47,8 @@ public class SqsService {
                                 Map.of(
                                         MESSAGE_TYPE_ATTRIBUTE, messageTypeAttribute,
                                         MESSAGE_ID_ATTRIBUTE, messageIdAttribute))
+                        .messageDeduplicationId(messageId)
+                        .messageGroupId("SAGE_UPLOAD")
                         .messageBody(serializationService.serialise(message))
                         .build();
         try {

@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import java.time.LocalDate;
 import java.util.List;
 
+import static java.text.MessageFormat.format;
+
 public class MatchFeeTransferScheduled implements RequestHandler<ScheduledEvent, String> {
     private static final Logger LOG = LoggerFactory.getLogger(MatchFeeTransferScheduled.class);
     private static final List<String> TEAMS =
@@ -51,11 +53,11 @@ public class MatchFeeTransferScheduled implements RequestHandler<ScheduledEvent,
 
         List<PlayCricketMatch> matches = playCricketService.getMatches(startDate, endDate, TEAMS);
 
-        String requestId = input.getId();
         matches.forEach(
                 m -> {
+                    String messageId = format("{0}-{1}", input.getId(), m.getId());
                     LOG.info("Sending match {} to queue", m.getId());
-                    sqsService.sendMessage(m, requestId, "match-fee");
+                    sqsService.sendMessage(m, messageId, "match-fee");
                 });
         return "OK";
     }
