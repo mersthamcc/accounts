@@ -1,8 +1,25 @@
 resource "aws_sqs_queue" "transactions" {
-  name                       = "${var.environment}-transactions"
+  name                       = "${var.environment}-transactions.fifo"
   max_message_size           = 262144
   message_retention_seconds  = 1209600
   visibility_timeout_seconds = 900
+
+  fifo_queue                  = true
+  content_based_deduplication = false
+
+  redrive_policy = jsonencode({
+    deadLetterTargetArn = aws_sqs_queue.transactions_dlq.arn
+    maxReceiveCount     = 3
+  })
+}
+
+resource "aws_sqs_queue" "transactions_dlq" {
+  name                      = "${var.environment}-transactions-dlq.fifo"
+  max_message_size          = 262144
+  message_retention_seconds = 1209600
+
+  fifo_queue                  = true
+  content_based_deduplication = false
 }
 
 resource "time_sleep" "wait_60_seconds" {
@@ -81,7 +98,7 @@ resource "aws_lambda_function" "process_transactions_sqs_lambda" {
   role          = aws_iam_role.queue_processor_lambda_iam_role.arn
   handler       = "cricket.merstham.website.accounts.lambda.ProcessTransactions::handleRequest"
   timeout       = 600
-  memory_size   = 512
+  memory_size   = 2048
   runtime       = "java11"
 
   environment {
@@ -99,7 +116,7 @@ resource "aws_lambda_event_source_mapping" "lambda_sqs_mapping" {
   event_source_arn = aws_sqs_queue.transactions.arn
   function_name    = aws_lambda_function.process_transactions_sqs_lambda.arn
 
-  batch_size = 1
+  batch_size = 10
   enabled    = true
 
   depends_on = [

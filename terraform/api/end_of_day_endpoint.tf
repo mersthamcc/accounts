@@ -24,7 +24,8 @@ module "end_of_day_endpoint" {
   endpoint_method       = "POST"
   environment_name      = var.environment
   handler_function_name = "cricket.merstham.website.accounts.lambda.EndOfDay::handleRequest"
-  lambda_role_arn       = aws_iam_role.end_of_day_lambda_iam_role.arn
+  lambda_role_arn       = aws_iam_role.end_of_day_endpoint_lambda_iam_role.arn
+  timeout               = 300
   handler_environment_variables = {
     CONFIG_NAME = var.environment
     END_OF_DAY_AUTH = base64encode(join(":", [
@@ -32,6 +33,7 @@ module "end_of_day_endpoint" {
       random_password.end_of_day_password.result
       ]
     ))
+    PROCESSING_LAMBDA_ARN = aws_lambda_function.process_end_of_day_lambda.arn
   }
 }
 

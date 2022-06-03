@@ -11,6 +11,9 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 public class SerializationService {
     private static final Logger LOG = LoggerFactory.getLogger(SerializationService.class);
 
@@ -35,11 +38,20 @@ public class SerializationService {
         }
     }
 
+    public <T> T deserialise(InputStream serialised, Class<T> clazz) {
+        try {
+            return objectMapper.readValue(serialised, clazz);
+        } catch (IOException e) {
+            LOG.error("Error deserialising object", e);
+            throw new RuntimeException("Error serialising object", e);
+        }
+    }
+
     public <T> T deserialise(String serialised, Class<T> clazz) {
         try {
             return objectMapper.readValue(serialised, clazz);
         } catch (JsonProcessingException e) {
-            LOG.error("Error serialising object", e);
+            LOG.error("Error deserialising object", e);
             throw new RuntimeException("Error serialising object", e);
         }
     }
@@ -48,7 +60,7 @@ public class SerializationService {
         try {
             return objectMapper.readTree(serialised);
         } catch (JsonProcessingException e) {
-            LOG.error("Error serialising object", e);
+            LOG.error("Error deserialising object", e);
             throw new RuntimeException("Error serialising object", e);
         }
     }

@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
+import static java.text.MessageFormat.format;
+
 public class ProcessTransactions implements RequestHandler<SQSEvent, Void> {
     private static final Logger LOG = LoggerFactory.getLogger(EndOfDay.class);
 
@@ -50,26 +52,33 @@ public class ProcessTransactions implements RequestHandler<SQSEvent, Void> {
 
     @Override
     public Void handleRequest(SQSEvent event, Context context) {
+        LOG.info("Starting processing on instance {}", context.getAwsRequestId());
         try {
             for (var message : event.getRecords()) {
                 SQSEvent.MessageAttribute transactionType =
                         message.getMessageAttributes().get(MESSAGE_TYPE_ATTRIBUTE);
 
                 if (transactionType == null) {
-                    LOG.info("Processing EPOS transaction message");
+                    LOG.info(
+                            "Processing EPOS transaction message. Instance {}",
+                            context.getAwsRequestId());
                     sageAccountingService.createEposNowSalesTransaction(
                             serializationService.deserialise(
                                     message.getBody(), EposNowTransaction.class));
                 } else {
                     switch (transactionType.getStringValue()) {
                         case EPOS_NOW_TRANSACTION:
-                            LOG.info("Processing EPOS transaction message");
+                            LOG.info(
+                                    "Processing EPOS transaction message. Instance {}",
+                                    context.getAwsRequestId());
                             sageAccountingService.createEposNowSalesTransaction(
                                     serializationService.deserialise(
                                             message.getBody(), EposNowTransaction.class));
                             break;
                         case MATCH_FEE_TRANSACTION:
-                            LOG.info("Processing match fee message");
+                            LOG.info(
+                                    "Processing match fee message. Instance {}",
+                                    context.getAwsRequestId());
                             PlayCricketMatch match =
                                     serializationService.deserialise(
                                             message.getBody(), PlayCricketMatch.class);
@@ -81,16 +90,20 @@ public class ProcessTransactions implements RequestHandler<SQSEvent, Void> {
                             break;
                         default:
                             LOG.error(
-                                    "Unknown message type encountered {}",
-                                    transactionType.getStringValue());
+                                    "Unknown message type encountered {}. Instance {}",
+                                    transactionType.getStringValue(),
+                                    context.getAwsRequestId());
                             break;
                     }
                 }
             }
         } catch (JsonProcessingException e) {
-            LOG.error("Error processing Sage data", e);
-            throw new RuntimeException("Error processing Sage data", e);
+            var message =
+                    format("Error processing Sage data. Instance {0}", context.getAwsRequestId());
+            LOG.error(message, e);
+            throw new RuntimeException(message, e);
         }
+        LOG.info("Finishing processing on instance {}", context.getAwsRequestId());
         return null;
     }
 }
