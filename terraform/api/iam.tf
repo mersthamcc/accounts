@@ -110,6 +110,7 @@ data "aws_iam_policy_document" "audit_dynamo_policy_document" {
     ]
     resources = [
       aws_dynamodb_table.audit.arn,
+      aws_dynamodb_table.error.arn,
     ]
   }
 }
