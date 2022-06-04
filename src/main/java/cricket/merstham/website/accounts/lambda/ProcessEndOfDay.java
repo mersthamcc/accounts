@@ -34,7 +34,7 @@ public class ProcessEndOfDay implements RequestHandler<InputStream, Integer> {
         Configuration config = dynamoService.getConfig();
         this.apiConfiguration = config.getApiConfiguration();
         this.eposNowService = new EposNowService(new EposNowApiClient(apiConfiguration));
-        this.serializationService = new SerializationService();
+        this.serializationService = SerializationService.getInstance();
         this.sqsService =
                 new SqsService(configurationService, serializationService, apiConfiguration);
     }

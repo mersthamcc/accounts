@@ -14,8 +14,11 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 
+import static java.util.Objects.isNull;
+
 public class SerializationService {
     private static final Logger LOG = LoggerFactory.getLogger(SerializationService.class);
+    private static SerializationService instance;
 
     private final ObjectMapper objectMapper;
 
@@ -63,5 +66,12 @@ public class SerializationService {
             LOG.error("Error deserialising object", e);
             throw new RuntimeException("Error serialising object", e);
         }
+    }
+
+    public static SerializationService getInstance() {
+        if (isNull(instance)) {
+            instance = new SerializationService();
+        }
+        return instance;
     }
 }

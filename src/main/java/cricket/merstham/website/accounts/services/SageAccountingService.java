@@ -44,7 +44,7 @@ public class SageAccountingService {
         this.mappingService = mappingService;
         this.dynamoService = dynamoService;
         this.apiClient = sageApiClient;
-        this.serializationService = new SerializationService();
+        this.serializationService = SerializationService.getInstance();
     }
 
     public boolean createEposNowSalesTransaction(EposNowTransaction transaction)

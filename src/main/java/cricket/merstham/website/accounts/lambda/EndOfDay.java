@@ -43,7 +43,7 @@ public class EndOfDay
         Configuration config = dynamoService.getConfig();
         this.apiConfiguration = config.getApiConfiguration();
         this.eposNowService = new EposNowService(new EposNowApiClient(apiConfiguration));
-        this.serializationService = new SerializationService();
+        this.serializationService = SerializationService.getInstance();
         this.configurationService = new ConfigurationService();
         this.client = LambdaClient.builder().region(EU_WEST_2).build();
     }

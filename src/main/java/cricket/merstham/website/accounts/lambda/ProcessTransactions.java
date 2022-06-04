@@ -48,7 +48,7 @@ public class ProcessTransactions implements RequestHandler<SQSEvent, Void> {
         ApiConfiguration apiConfiguration = configuration.getApiConfiguration();
         EposNowService eposNowService = new EposNowService(new EposNowApiClient(apiConfiguration));
         this.playCricketService = new PlayCricketService(configurationService);
-        this.serializationService = new SerializationService();
+        this.serializationService = SerializationService.getInstance();
         this.sageApiClient =
                 new SageApiClient(
                         dynamoService.getConfig(),

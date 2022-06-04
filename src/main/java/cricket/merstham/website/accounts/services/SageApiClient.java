@@ -7,6 +7,9 @@ import cricket.merstham.website.accounts.sage.ApiClient;
 import cricket.merstham.website.accounts.sage.ApiException;
 import cricket.merstham.website.accounts.sage.ApiResponse;
 import cricket.merstham.website.accounts.sage.Pair;
+import dev.failsafe.Failsafe;
+import dev.failsafe.FailsafeException;
+import dev.failsafe.RetryPolicy;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.slf4j.Logger;
@@ -19,6 +22,9 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
+import java.io.IOException;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,11 +32,17 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.text.MessageFormat.format;
+import static java.time.temporal.ChronoUnit.SECONDS;
+import static org.apache.http.HttpStatus.SC_BAD_GATEWAY;
+import static org.apache.http.HttpStatus.SC_GATEWAY_TIMEOUT;
+import static org.apache.http.HttpStatus.SC_SERVICE_UNAVAILABLE;
 
 public class SageApiClient extends ApiClient {
     private static final Logger LOG = LoggerFactory.getLogger(SageApiClient.class);
     private static final URI AUTH_URL = URI.create("https://www.sageone.com/oauth2/auth/central");
     private static final URI TOKEN_URL = URI.create("https://oauth.accounting.sage.com/token");
+    private static final List<Integer> RETRY_STATUS =
+            List.of(SC_BAD_GATEWAY, SC_GATEWAY_TIMEOUT, SC_SERVICE_UNAVAILABLE);
 
     private final Configuration configuration;
     private final ConfigurationService configurationService;
@@ -63,22 +75,41 @@ public class SageApiClient extends ApiClient {
             String[] authNames,
             GenericType<T> returnType)
             throws ApiException {
+        var retryPolicy =
+                RetryPolicy.<ApiResponse<T>>builder()
+                        .handle(IOException.class)
+                        .handle(JsonProcessingException.class)
+                        .handle(SocketTimeoutException.class)
+                        .handle(SocketException.class)
+                        .handleResultIf(r -> RETRY_STATUS.contains(r.getStatusCode()))
+                        .withBackoff(5, 60, SECONDS)
+                        .withMaxRetries(5)
+                        .onFailedAttempt(
+                                e -> LOG.error("Connection attempt failed", e.getLastException()))
+                        .onRetry(e -> LOG.warn("Failure #{}. Retrying.", e.getAttemptCount()))
+                        .onSuccess(e -> LOG.info("Received successful response"))
+                        .build();
+
         try {
-            refreshToken();
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Error parsing refresh token", e);
+            return Failsafe.with(retryPolicy)
+                    .get(
+                            () -> {
+                                refreshToken();
+                                return super.invokeAPI(
+                                        path,
+                                        method,
+                                        queryParams,
+                                        body,
+                                        headerParams,
+                                        formParams,
+                                        accept,
+                                        contentType,
+                                        authNames,
+                                        returnType);
+                            });
+        } catch (FailsafeException e) {
+            throw new ApiException(e.getCause());
         }
-        return super.invokeAPI(
-                path,
-                method,
-                queryParams,
-                body,
-                headerParams,
-                formParams,
-                accept,
-                contentType,
-                authNames,
-                returnType);
     }
 
     public URI getAuthUrl(String state) {
