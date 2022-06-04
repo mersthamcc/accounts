@@ -4,20 +4,26 @@ import cricket.merstham.website.accounts.model.TokenStore;
 
 import java.time.LocalDateTime;
 
+import static java.util.Objects.isNull;
+
 public class TokenManager {
     private final DynamoService dynamoService;
+    private TokenStore cached;
 
     public TokenManager(DynamoService dynamoService) {
         this.dynamoService = dynamoService;
     }
 
     public TokenStore getTokenStore() {
-        return dynamoService.getToken();
+        if (isNull(cached)) {
+            cached = dynamoService.getToken();
+        }
+        return cached;
     }
 
     public boolean isAccessTokenExpired() {
-        return LocalDateTime.now()
-                .isAfter(dynamoService.getToken().getAccessTokenExpiry().minusMinutes(1));
+        if (isNull(cached)) getTokenStore();
+        return LocalDateTime.now().isAfter(cached.getAccessTokenExpiry().minusMinutes(1));
     }
 
     public TokenStore update(
@@ -32,6 +38,7 @@ public class TokenManager {
                         .setAccessTokenExpiry(accessTokenExpiry)
                         .setRefreshToken(refreshToken)
                         .setRefreshTokenExpiry(refreshTokenExpiry);
-        return dynamoService.putToken(tokenStore);
+        cached = dynamoService.putToken(tokenStore);
+        return cached;
     }
 }

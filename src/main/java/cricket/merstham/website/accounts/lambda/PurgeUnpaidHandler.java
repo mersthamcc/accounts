@@ -27,14 +27,17 @@ public class PurgeUnpaidHandler
     private final SageAccountingService sageAccountingService;
     private final SerializationService serializationService;
     private final ConfigurationService configurationService;
+    private final SageApiClient sageApiClient;
 
     public PurgeUnpaidHandler(
             SageAccountingService sageAccountingService,
             SerializationService serializationService,
-            ConfigurationService configurationService) {
+            ConfigurationService configurationService,
+            SageApiClient sageApiClient) {
         this.sageAccountingService = sageAccountingService;
         this.serializationService = serializationService;
         this.configurationService = configurationService;
+        this.sageApiClient = sageApiClient;
     }
 
     public PurgeUnpaidHandler() {
@@ -42,13 +45,12 @@ public class PurgeUnpaidHandler
         this.serializationService = new SerializationService();
         DynamoService dynamoService = new DynamoService(configurationService);
         Configuration configuration = dynamoService.getConfig();
-        this.sageAccountingService =
-                new SageAccountingService(
-                        configuration,
+        this.sageApiClient =
+                new SageApiClient(
+                        dynamoService.getConfig(),
                         configurationService,
-                        new TokenManager(dynamoService),
-                        null,
-                        dynamoService);
+                        new TokenManager(dynamoService));
+        this.sageAccountingService = new SageAccountingService(null, dynamoService, sageApiClient);
     }
 
     @Override

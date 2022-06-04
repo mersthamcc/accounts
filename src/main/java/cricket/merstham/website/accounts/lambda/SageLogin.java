@@ -15,24 +15,16 @@ public class SageLogin
 
     private final ConfigurationService configurationService;
     private final DynamoService dynamoService;
-    private final SageAccountingService sageAccountingService;
+    private final SageApiClient sageApiClient;
 
     public SageLogin() {
         this.configurationService = new ConfigurationService();
         this.dynamoService = new DynamoService(configurationService);
-        this.sageAccountingService =
-                new SageAccountingService(
+        this.sageApiClient =
+                new SageApiClient(
                         dynamoService.getConfig(),
                         configurationService,
-                        new TokenManager(dynamoService),
-                        new MappingService(
-                                configurationService,
-                                new EposNowService(
-                                        new EposNowApiClient(
-                                                dynamoService.getConfig().getApiConfiguration())),
-                                dynamoService,
-                                null),
-                        dynamoService);
+                        new TokenManager(dynamoService));
     }
 
     @Override
@@ -44,7 +36,6 @@ public class SageLogin
         dynamoService.putToken(tokenStore);
         return new APIGatewayProxyResponseEvent()
                 .withStatusCode(302)
-                .withHeaders(
-                        Map.of("Location", sageAccountingService.getAuthUrl(state).toString()));
+                .withHeaders(Map.of("Location", sageApiClient.getAuthUrl(state).toString()));
     }
 }

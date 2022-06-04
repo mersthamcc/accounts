@@ -4,6 +4,7 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import cricket.merstham.website.accounts.model.TokenStore;
 import cricket.merstham.website.accounts.services.*;
 import org.slf4j.Logger;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 
+import static org.apache.http.HttpStatus.SC_INTERNAL_SERVER_ERROR;
 import static org.apache.http.HttpStatus.SC_UNAUTHORIZED;
 
 public class SageCallback
@@ -19,24 +21,16 @@ public class SageCallback
 
     private final ConfigurationService configurationService;
     private final DynamoService dynamoService;
-    private final SageAccountingService sageAccountingService;
+    private final SageApiClient sageApiClient;
 
     public SageCallback() {
         this.configurationService = new ConfigurationService();
         this.dynamoService = new DynamoService(configurationService);
-        this.sageAccountingService =
-                new SageAccountingService(
+        this.sageApiClient =
+                new SageApiClient(
                         dynamoService.getConfig(),
                         configurationService,
-                        new TokenManager(dynamoService),
-                        new MappingService(
-                                configurationService,
-                                new EposNowService(
-                                        new EposNowApiClient(
-                                                dynamoService.getConfig().getApiConfiguration())),
-                                dynamoService,
-                                null),
-                        dynamoService);
+                        new TokenManager(dynamoService));
     }
 
     @Override
@@ -51,7 +45,14 @@ public class SageCallback
                 && tokenStore.getState() != null
                 && tokenStore.getState().equals(state)
                 && !code.isBlank()) {
-            sageAccountingService.exchangeForToken(code);
+            try {
+                sageApiClient.exchangeForToken(code);
+            } catch (JsonProcessingException e) {
+                LOG.error("Error parsing token response", e);
+                return new APIGatewayProxyResponseEvent()
+                        .withStatusCode(SC_INTERNAL_SERVER_ERROR)
+                        .withBody(e.getMessage());
+            }
             LOG.info("Token successfully retrieved from Sage IDP and stored");
             return new APIGatewayProxyResponseEvent()
                     .withBody("Token successfully retrieved from Sage IDP and stored");
