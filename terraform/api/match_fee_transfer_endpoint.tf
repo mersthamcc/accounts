@@ -10,11 +10,11 @@ module "match_fee_transfer_endpoint" {
   execution_arn         = aws_api_gateway_rest_api.api.execution_arn
   endpoint_name         = "match-fee-transfer"
   endpoint_method       = "POST"
-  environment_name      = var.environment_name
+  environment_name      = var.environment
   handler_function_name = "cricket.merstham.website.accounts.lambda.MatchFeeTransfer::handleRequest"
   lambda_role_arn       = aws_iam_role.match_fee_lambda_iam_role.arn
   handler_environment_variables = {
-    CONFIG_NAME = var.environment_name
+    CONFIG_NAME = var.environment
   }
 }
 
