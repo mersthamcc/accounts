@@ -11,7 +11,9 @@ resource "aws_lambda_function" "endpoint_lambda" {
   memory_size   = 3072
 
   environment {
-    variables = var.handler_environment_variables
+    variables = merge(var.handler_environment_variables, {
+      JAVA_TOOL_OPTIONS = "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
+    })
   }
 
   runtime = var.handler_runtime

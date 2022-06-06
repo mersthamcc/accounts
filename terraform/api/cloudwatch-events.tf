@@ -8,12 +8,13 @@ resource "aws_lambda_function" "match_fee_lambda" {
   role          = aws_iam_role.match_fee_lambda_iam_role.arn
   handler       = "cricket.merstham.website.accounts.lambda.MatchFeeTransferScheduled::handleRequest"
   timeout       = 300
-  memory_size   = 1024
+  memory_size   = 2048
   publish       = true
 
   environment {
     variables = {
-      CONFIG_NAME = var.environment
+      CONFIG_NAME       = var.environment
+      JAVA_TOOL_OPTIONS = "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
     }
   }
 
@@ -30,12 +31,13 @@ resource "aws_lambda_function" "refresh_token_lambda" {
   role          = aws_iam_role.match_fee_lambda_iam_role.arn
   handler       = "cricket.merstham.website.accounts.lambda.RefreshSageTokenScheduled::handleRequest"
   timeout       = 300
-  memory_size   = 1024
+  memory_size   = 2048
   publish       = true
 
   environment {
     variables = {
-      CONFIG_NAME = var.environment
+      CONFIG_NAME       = var.environment
+      JAVA_TOOL_OPTIONS = "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
     }
   }
 
