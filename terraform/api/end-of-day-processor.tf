@@ -11,7 +11,8 @@ resource "aws_lambda_function" "process_end_of_day_lambda" {
 
   environment {
     variables = {
-      CONFIG_NAME = var.environment
+      CONFIG_NAME       = var.environment
+      JAVA_TOOL_OPTIONS = "-XX:+TieredCompilation -XX:TieredStopAtLevel=1"
     }
   }
 
