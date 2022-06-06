@@ -26,6 +26,7 @@ resource "aws_api_gateway_deployment" "deployment" {
       module.sage_callback_endpoint.integration_trigger_value,
       module.end_of_day_endpoint.integration_trigger_value,
       module.purge_endpoint.integration_trigger_value,
+      module.match_fee_transfer_endpoint.integration_trigger_value,
     ]))
   }
 
@@ -37,6 +38,7 @@ resource "aws_api_gateway_deployment" "deployment" {
     module.sage_callback_endpoint,
     module.end_of_day_endpoint,
     module.purge_endpoint,
+    module.match_fee_transfer_endpoint,
   ]
 }
 
@@ -50,6 +52,7 @@ resource "aws_api_gateway_stage" "api_stage" {
     module.sage_callback_endpoint,
     module.end_of_day_endpoint,
     module.purge_endpoint,
+    module.match_fee_transfer_endpoint,
     aws_api_gateway_deployment.deployment,
   ]
 }
