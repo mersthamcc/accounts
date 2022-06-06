@@ -24,7 +24,7 @@ public class MatchFeeTransfer
     private final SqsService sqsService;
 
     public MatchFeeTransfer() {
-        this.serializationService = new SerializationService();
+        this.serializationService = SerializationService.getInstance();
         this.playCricketService = new PlayCricketService(new ConfigurationService());
         ConfigurationService configurationService = new ConfigurationService();
         DynamoService dynamoService = new DynamoService(configurationService);

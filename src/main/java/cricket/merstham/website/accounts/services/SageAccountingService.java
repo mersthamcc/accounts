@@ -1,10 +1,8 @@
 package cricket.merstham.website.accounts.services;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import cricket.merstham.website.accounts.configuration.ApiConfiguration;
-import cricket.merstham.website.accounts.configuration.Configuration;
 import cricket.merstham.website.accounts.model.*;
+import cricket.merstham.website.accounts.model.Error;
 import cricket.merstham.website.accounts.sage.ApiClient;
 import cricket.merstham.website.accounts.sage.ApiException;
 import cricket.merstham.website.accounts.sage.ApiResponse;
@@ -14,21 +12,15 @@ import cricket.merstham.website.accounts.sage.api.SalesCreditNotesApi;
 import cricket.merstham.website.accounts.sage.api.SalesInvoicesApi;
 import cricket.merstham.website.accounts.sage.api.SalesQuickEntriesApi;
 import cricket.merstham.website.accounts.sage.model.*;
-import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.core.Form;
 import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 
-import java.net.URI;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,37 +31,27 @@ import static java.text.MessageFormat.format;
 
 public class SageAccountingService {
     private static final Logger LOG = LoggerFactory.getLogger(SageAccountingService.class);
-    private static final URI AUTH_URL = URI.create("https://www.sageone.com/oauth2/auth/central");
-    private static final URI TOKEN_URL = URI.create("https://oauth.accounting.sage.com/token");
 
-    private final ApiConfiguration apiConfiguration;
-    private final ConfigurationService configurationService;
-    private final TokenManager tokenManager;
     private final SerializationService serializationService;
     private final MappingService mappingService;
     private final DynamoService dynamoService;
+    private final ApiClient apiClient;
 
     public SageAccountingService(
-            Configuration configuration,
-            ConfigurationService configurationService,
-            TokenManager tokenManager,
             MappingService mappingService,
-            DynamoService dynamoService) {
-        this.apiConfiguration = configuration.getApiConfiguration();
-        this.configurationService = configurationService;
-        this.tokenManager = tokenManager;
+            DynamoService dynamoService,
+            SageApiClient sageApiClient) {
         this.mappingService = mappingService;
         this.dynamoService = dynamoService;
-        this.serializationService = new SerializationService();
+        this.apiClient = sageApiClient;
+        this.serializationService = SerializationService.getInstance();
     }
 
     public boolean createEposNowSalesTransaction(EposNowTransaction transaction)
             throws JsonProcessingException {
-        ApiClient apiClient = getClient();
         SalesInvoicesApi salesInvoicesApi = new SalesInvoicesApi(apiClient);
         SalesCreditNotesApi creditNotesApi = new SalesCreditNotesApi(apiClient);
         ContactPaymentsApi paymentsApi = new ContactPaymentsApi(apiClient);
-        refreshClient(apiClient);
         Optional<Audit> previousAuditEntry = dynamoService.getAuditLog(transaction.getBarcode());
         if (previousAuditEntry.isEmpty()) {
             if (transaction.getTotalAmount().doubleValue() > 0.00
@@ -101,7 +83,6 @@ public class SageAccountingService {
 
     public boolean createQuickEntriesForMatchFees(
             PlayCricketMatch match, List<PlayCricketPlayer> players) {
-        ApiClient apiClient = getClient();
         SalesQuickEntriesApi api = new SalesQuickEntriesApi(apiClient);
 
         try {
@@ -126,7 +107,6 @@ public class SageAccountingService {
                                         p.getPlayerName(),
                                         request.getReference(),
                                         request.getTotalAmount().doubleValue());
-                                refreshClient(apiClient);
                                 var response =
                                         api.postSalesQuickEntries(
                                                 new PostSalesQuickEntries()
@@ -149,7 +129,7 @@ public class SageAccountingService {
                                         p.getPlayerName(),
                                         previousAuditEntry.get().getDateTransferred());
                             }
-                        } catch (ApiException | JsonProcessingException e) {
+                        } catch (ApiException e) {
                             throw new RuntimeException(e);
                         }
                     });
@@ -162,7 +142,6 @@ public class SageAccountingService {
 
     public List<String> getUnpaidIds(LocalDate startDate, LocalDate endDate)
             throws ApiException, JsonProcessingException {
-        ApiClient apiClient = getClient();
         SalesQuickEntriesApi api = new SalesQuickEntriesApi(apiClient);
         List<String> ids = new ArrayList<>();
         boolean done = false;
@@ -170,8 +149,6 @@ public class SageAccountingService {
         int pageSize = 200;
 
         while (!done) {
-            refreshClient(apiClient);
-
             final String accepts = apiClient.selectHeaderAccept(new String[] {"application/json"});
 
             final String contentType = apiClient.selectHeaderContentType(new String[] {});
@@ -215,7 +192,6 @@ public class SageAccountingService {
     }
 
     public void deleteEntries(List<String> idsToDelete) {
-        ApiClient apiClient = getClient();
         SalesQuickEntriesApi api = new SalesQuickEntriesApi(apiClient);
 
         idsToDelete.forEach(
@@ -235,14 +211,16 @@ public class SageAccountingService {
             EposNowTransaction transaction,
             SalesCreditNotesApi creditNotesApi,
             ContactPaymentsApi paymentsApi) {
+        var now = LocalDateTime.now();
+        Error error =
+                new Error()
+                        .setId(format("{0}-{1}", transaction.getBarcode(), now.toString()))
+                        .setTransferDate(now);
         try {
             PostSalesCreditNotesSalesCreditNote creditNoteRequest =
                     mappingService.creditNoteFromEposTransaction(transaction);
 
-            Audit audit =
-                    new Audit()
-                            .setBarcode(transaction.getBarcode())
-                            .setDateTransferred(LocalDateTime.now());
+            Audit audit = new Audit().setBarcode(transaction.getBarcode()).setDateTransferred(now);
 
             var creditNote =
                     creditNotesApi.postSalesCreditNotes(
@@ -253,6 +231,7 @@ public class SageAccountingService {
                             .setSageCustomerId(creditNote.getContact().getId())
                             .setSageCustomerName(creditNote.getContactName())
                             .setSageDocumentType("Credit Notes"));
+            error.getProgress().put("CREDIT NOTE CREATED", creditNote.getId());
 
             if (transaction.getTenders() == null) {
                 LOG.info(
@@ -269,6 +248,8 @@ public class SageAccountingService {
             ContactPayment contactPayment =
                     paymentsApi.postContactPayments(
                             new PostContactPayments().contactPayment(payment));
+            error.getProgress().put("REFUND CREATED", contactPayment.getId());
+
             LOG.info(
                     "Created {} for transaction {} with payment ({}) of £{} in {} on {}",
                     creditNote.getDisplayedAs(),
@@ -283,8 +264,8 @@ public class SageAccountingService {
         } catch (cricket.merstham.website.accounts.sage.ApiException e) {
             LOG.error(
                     "Error creating Sage credit note for transaction {}", transaction.getBarcode());
-            LOG.error("Sage API Exception", e);
-            return false;
+            error.setSource(serializationService.serialise(transaction));
+            return createErrorLog(error, e);
         }
     }
 
@@ -305,23 +286,26 @@ public class SageAccountingService {
             EposNowTransaction transaction,
             SalesInvoicesApi salesInvoicesApi,
             ContactPaymentsApi paymentsApi) {
+        var now = LocalDateTime.now();
+        Error error =
+                new Error()
+                        .setId(format("{0}-{1}", transaction.getBarcode(), now.toString()))
+                        .setTransferDate(now);
         try {
             PostSalesInvoicesSalesInvoice salesInvoices =
                     mappingService.salesInvoiceFromEposTransaction(transaction);
-            Audit audit =
-                    new Audit()
-                            .setBarcode(transaction.getBarcode())
-                            .setDateTransferred(LocalDateTime.now());
+            Audit audit = new Audit().setBarcode(transaction.getBarcode()).setDateTransferred(now);
 
             var salesInvoice =
                     salesInvoicesApi.postSalesInvoices(
                             new PostSalesInvoices().salesInvoice(salesInvoices));
+
             dynamoService.writeAuditLog(
                     audit.setSageReference(salesInvoice.getDisplayedAs())
                             .setSageCustomerId(salesInvoice.getContact().getId())
                             .setSageCustomerName(salesInvoice.getContactName())
                             .setSageDocumentType("Sales Invoice"));
-
+            error.getProgress().put("SALES ORDER CREATED", salesInvoice.getId());
             if (transaction.getTenders() == null) {
                 LOG.info(
                         "Invoice {} for transaction {} on {} for £{} but no tender found.",
@@ -331,7 +315,9 @@ public class SageAccountingService {
                         transaction.getTotalAmount().setScale(2));
                 return false;
             }
+            int i = 0;
             for (var tender : transaction.getTenders()) {
+                i = i + 1;
                 PostContactPaymentsContactPayment payment =
                         mappingService.paymentForEposTransaction(tender, salesInvoice);
 
@@ -340,6 +326,7 @@ public class SageAccountingService {
                                 new PostContactPayments().contactPayment(payment));
 
                 dynamoService.writeAuditLog(audit.addSagePaymentId(contactPayment.getId()));
+                error.getProgress().put(format("PAYMENT CREATED {0}", i), contactPayment.getId());
             }
             LOG.info(
                     "Created {} for transaction {} with payments ({}) of £{} on {}",
@@ -351,9 +338,24 @@ public class SageAccountingService {
             return true;
         } catch (cricket.merstham.website.accounts.sage.ApiException e) {
             LOG.error("Error creating Sage invoice for transaction {}", transaction.getBarcode());
-            LOG.error("Sage API Exception", e);
-            return false;
+            error.setSource(serializationService.serialise(transaction));
+            return createErrorLog(error, e);
         }
+    }
+
+    private boolean createErrorLog(Error error, ApiException e) {
+        LOG.error("Sage API Exception", e);
+        error.setExceptionName(e.getClass().getCanonicalName())
+                .setStatusCode(e.getCode())
+                .setExceptionMessage(e.getMessage())
+                .setStackTrace(
+                        String.join(
+                                "\n",
+                                Arrays.stream(e.getStackTrace())
+                                        .map(stackTraceElement -> stackTraceElement.toString())
+                                        .collect(Collectors.toList())));
+        dynamoService.writeErrorLog(error);
+        return false;
     }
 
     private boolean containsInvoiceableItems(EposNowTransaction transaction) {
@@ -367,95 +369,5 @@ public class SageAccountingService {
                                         .filter(t -> t.getUnitPrice().doubleValue() > 0.00)
                                         .count()
                                 > 0);
-    }
-
-    private ApiClient getClient() {
-        ApiClient apiClient = new ApiClient();
-        apiClient.setUserAgent("mersthamcc.co.uk Accounts Interface");
-        apiClient.setAccessToken(tokenManager.getTokenStore().getAccessToken());
-        return apiClient;
-    }
-
-    private ApiClient refreshClient(ApiClient apiClient) throws JsonProcessingException {
-        if (tokenManager.isAccessTokenExpired()) {
-            apiClient.setAccessToken(refreshToken());
-        }
-        return apiClient;
-    }
-
-    public URI getAuthUrl(String state) {
-        return UriBuilder.fromUri(AUTH_URL)
-                .queryParam("country", "gb")
-                .queryParam("locale", "en-GB")
-                .queryParam("client_id", apiConfiguration.getSageApiKey())
-                .queryParam("response_type", "code")
-                .queryParam(
-                        "redirect_uri",
-                        format("{0}/sage-callback", configurationService.getBaseUrl()))
-                .queryParam("state", state)
-                .queryParam("scopes", "full_access")
-                .build();
-    }
-
-    public String exchangeForToken(String code) {
-        var form = new Form();
-        form.param("grant_type", "authorization_code");
-        form.param("code", code);
-        form.param("redirect_uri", format("{0}/sage-callback", configurationService.getBaseUrl()));
-
-        return tokenRequest(form);
-    }
-
-    public String refreshToken() {
-        var form = new Form();
-        form.param("grant_type", "refresh_token");
-        form.param("refresh_token", tokenManager.getTokenStore().getRefreshToken());
-
-        return tokenRequest(form);
-    }
-
-    private String tokenRequest(Form form) {
-        Client client = JerseyClientBuilder.createClient();
-        form.param("client_id", apiConfiguration.getSageApiKey());
-        form.param("client_secret", apiConfiguration.getSageApiSecret());
-        LOG.info(
-                "Performing token request with parameters = {}",
-                String.join(
-                        "&",
-                        form.asMap().entrySet().stream()
-                                .map(
-                                        e ->
-                                                String.join(
-                                                        ",",
-                                                        e.getValue().stream()
-                                                                .map(
-                                                                        v ->
-                                                                                format(
-                                                                                        "{0}={1}",
-                                                                                        e.getKey(),
-                                                                                        v))
-                                                                .collect(Collectors.toList())))
-                                .collect(Collectors.toList())));
-        Response response = client.target(TOKEN_URL).request().post(Entity.form(form));
-        String body = response.readEntity(String.class);
-        LOG.info("Received token response = {}", body);
-        JsonNode json = serializationService.deserialise(body);
-        if (json.has("error_description")) {
-            throw new RuntimeException(json.get("error_description").asText());
-        }
-        long expiresIn = json.get("expires_in").asLong(0);
-        long refreshExpiresIn = json.get("refresh_token_expires_in").asLong(0);
-        LOG.info(
-                "Access token expires in {} seconds - Refresh Token Expires in {} seconds",
-                expiresIn,
-                refreshExpiresIn);
-        LocalDateTime accessTokenExpiry = LocalDateTime.now().plusSeconds(expiresIn);
-        LocalDateTime refreshTokenExpiry = LocalDateTime.now().plusSeconds(refreshExpiresIn);
-        tokenManager.update(
-                json.get("access_token").asText(),
-                accessTokenExpiry,
-                json.get("refresh_token").asText(),
-                refreshTokenExpiry);
-        return tokenManager.getTokenStore().getAccessToken();
     }
 }

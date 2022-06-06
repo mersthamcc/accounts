@@ -30,7 +30,7 @@ public class MatchFeeTransferScheduled implements RequestHandler<ScheduledEvent,
     private final SqsService sqsService;
 
     public MatchFeeTransferScheduled() {
-        this.serializationService = new SerializationService();
+        this.serializationService = SerializationService.getInstance();
         this.playCricketService = new PlayCricketService(new ConfigurationService());
         ConfigurationService configurationService = new ConfigurationService();
         DynamoService dynamoService = new DynamoService(configurationService);

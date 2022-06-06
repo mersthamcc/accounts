@@ -6,6 +6,7 @@ import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapperConfig;
 import cricket.merstham.website.accounts.configuration.Configuration;
 import cricket.merstham.website.accounts.model.Audit;
+import cricket.merstham.website.accounts.model.Error;
 import cricket.merstham.website.accounts.model.TokenStore;
 
 import java.util.Optional;
@@ -61,5 +62,9 @@ public class DynamoService {
     public Optional<Audit> getAuditLog(String auditKey) {
         Audit audit = instanceMapper.load(Audit.class, auditKey);
         return Optional.ofNullable(audit);
+    }
+
+    public void writeErrorLog(Error error) {
+        instanceMapper.save(error);
     }
 }

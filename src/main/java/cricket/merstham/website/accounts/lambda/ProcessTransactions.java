@@ -28,6 +28,18 @@ public class ProcessTransactions implements RequestHandler<SQSEvent, Void> {
     private final SageAccountingService sageAccountingService;
     private final SerializationService serializationService;
     private final PlayCricketService playCricketService;
+    private final SageApiClient sageApiClient;
+
+    public ProcessTransactions(
+            SageAccountingService sageAccountingService,
+            SerializationService serializationService,
+            PlayCricketService playCricketService,
+            SageApiClient sageApiClient) {
+        this.sageAccountingService = sageAccountingService;
+        this.serializationService = serializationService;
+        this.playCricketService = playCricketService;
+        this.sageApiClient = sageApiClient;
+    }
 
     public ProcessTransactions() {
         ConfigurationService configurationService = new ConfigurationService();
@@ -36,18 +48,21 @@ public class ProcessTransactions implements RequestHandler<SQSEvent, Void> {
         ApiConfiguration apiConfiguration = configuration.getApiConfiguration();
         EposNowService eposNowService = new EposNowService(new EposNowApiClient(apiConfiguration));
         this.playCricketService = new PlayCricketService(configurationService);
-        this.serializationService = new SerializationService();
+        this.serializationService = SerializationService.getInstance();
+        this.sageApiClient =
+                new SageApiClient(
+                        dynamoService.getConfig(),
+                        configurationService,
+                        new TokenManager(dynamoService));
         this.sageAccountingService =
                 new SageAccountingService(
-                        configuration,
-                        configurationService,
-                        new TokenManager(dynamoService),
                         new MappingService(
                                 configurationService,
                                 eposNowService,
                                 dynamoService,
                                 playCricketService),
-                        dynamoService);
+                        dynamoService,
+                        sageApiClient);
     }
 
     @Override
