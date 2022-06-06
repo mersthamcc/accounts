@@ -62,3 +62,28 @@ resource "aws_api_gateway_base_path_mapping" "api" {
   stage_name  = aws_api_gateway_stage.api_stage.stage_name
   domain_name = aws_api_gateway_domain_name.api.domain_name
 }
+
+resource "aws_api_gateway_usage_plan" "usage_plan" {
+  name = "match-fee-usage-plan"
+
+  api_stages {
+    api_id = aws_api_gateway_rest_api.api.id
+    stage  = aws_api_gateway_stage.api_stage.stage_name
+  }
+
+  depends_on = [
+    aws_api_gateway_rest_api.api,
+    aws_api_gateway_stage.api_stage,
+    aws_api_gateway_deployment.deployment,
+  ]
+}
+
+resource "aws_api_gateway_api_key" "match_fee_api_key" {
+  name = "match-fee-api-key"
+}
+
+resource "aws_api_gateway_usage_plan_key" "match_fee_api_key" {
+  key_id        = aws_api_gateway_api_key.match_fee_api_key.id
+  key_type      = "API_KEY"
+  usage_plan_id = aws_api_gateway_usage_plan.usage_plan.id
+}

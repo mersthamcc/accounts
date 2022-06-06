@@ -13,6 +13,8 @@ module "match_fee_transfer_endpoint" {
   environment_name      = var.environment
   handler_function_name = "cricket.merstham.website.accounts.lambda.MatchFeeTransfer::handleRequest"
   lambda_role_arn       = aws_iam_role.match_fee_lambda_iam_role.arn
+  api_key_required      = true
+
   handler_environment_variables = {
     CONFIG_NAME = var.environment
   }
