@@ -346,6 +346,7 @@ public class SageAccountingService {
     private boolean createErrorLog(Error error, ApiException e) {
         LOG.error("Sage API Exception", e);
         error.setExceptionName(e.getClass().getCanonicalName())
+                .setStatusCode(e.getCode())
                 .setExceptionMessage(e.getMessage())
                 .setStackTrace(
                         String.join(

@@ -18,6 +18,7 @@ public class Error {
     private String exceptionName;
     private String exceptionMessage;
     private String stackTrace;
+    private int statusCode;
     private boolean reviewed = false;
     private Map<String, String> progress = new HashMap<>();
 
@@ -99,6 +100,16 @@ public class Error {
 
     public Error setProgress(Map<String, String> progress) {
         this.progress = progress;
+        return this;
+    }
+
+    @DynamoDBAttribute(attributeName = "status_code")
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    public Error setStatusCode(int statusCode) {
+        this.statusCode = statusCode;
         return this;
     }
 }
