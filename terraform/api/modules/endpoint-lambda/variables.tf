@@ -41,3 +41,7 @@ variable "environment_name" {
 variable "timeout" {
   default = 30
 }
+
+variable "api_key_required" {
+  default = false
+}

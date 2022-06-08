@@ -9,6 +9,7 @@ resource "aws_api_gateway_method" "endpoint_method" {
   resource_id        = aws_api_gateway_resource.endpoint_resource.id
   http_method        = var.endpoint_method
   authorization      = "NONE"
+  api_key_required   = var.api_key_required
   request_parameters = {}
 
   depends_on = [
