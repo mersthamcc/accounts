@@ -11,8 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.UUID;
 
+import static java.text.MessageFormat.format;
 import static org.apache.http.HttpStatus.SC_OK;
 
 public class MatchFeeTransfer
@@ -47,12 +47,11 @@ public class MatchFeeTransfer
                 playCricketService.getMatches(
                         request.getStartDate(), request.getEndDate(), request.getTeams());
 
-        String groupId = UUID.randomUUID().toString();
-        String requestId = input.getRequestContext().getRequestId();
         matches.forEach(
                 m -> {
+                    String messageId = format("{0}-{1}", context.getAwsRequestId(), m.getId());
                     LOG.info("Sending match {} to queue", m.getId());
-                    sqsService.sendMessage(m, requestId, "match-fee");
+                    sqsService.sendMessage(m, messageId, "match-fee");
                 });
 
         return new APIGatewayProxyResponseEvent()

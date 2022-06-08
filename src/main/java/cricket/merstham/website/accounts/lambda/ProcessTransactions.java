@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static java.text.MessageFormat.format;
 
@@ -94,13 +95,22 @@ public class ProcessTransactions implements RequestHandler<SQSEvent, Void> {
                             LOG.info(
                                     "Processing match fee message. Instance {}",
                                     context.getAwsRequestId());
+                            LOG.info("Message = {}", message.getBody());
                             PlayCricketMatch match =
                                     serializationService.deserialise(
                                             message.getBody(), PlayCricketMatch.class);
 
                             List<PlayCricketPlayer> players =
                                     playCricketService.getOurPlayers(match.getId());
-
+                            LOG.info(
+                                    "Player List for {} vs {}: {}",
+                                    match.getHomeTeamName(),
+                                    match.getAwayTeamName(),
+                                    String.join(
+                                            ", ",
+                                            players.stream()
+                                                    .map(p -> p.getPlayerName())
+                                                    .collect(Collectors.toList())));
                             sageAccountingService.createQuickEntriesForMatchFees(match, players);
                             break;
                         default:
