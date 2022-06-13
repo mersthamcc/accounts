@@ -52,10 +52,10 @@ public class MappingService {
                 if (item.getQuantity().longValue() > 0) {
                     if (item.getMultipleChoiceItems() == null
                             || item.getMultipleChoiceItems().isEmpty()) {
-                        lines.add(createLine(item));
+                        lines.add(createLine(item, 1));
                     } else {
                         for (var subItem : item.getMultipleChoiceItems()) {
-                            lines.add(createLine(subItem));
+                            lines.add(createLine(subItem, item.getQuantity().intValue()));
                         }
                     }
                 }
@@ -111,10 +111,10 @@ public class MappingService {
                 if (item.getQuantity().longValue() < 0) {
                     if (item.getMultipleChoiceItems() == null
                             || item.getMultipleChoiceItems().isEmpty()) {
-                        lines.add(createLine(item));
+                        lines.add(createLine(item, 1));
                     } else {
                         for (var subItem : item.getMultipleChoiceItems()) {
-                            lines.add(createLine(subItem));
+                            lines.add(createLine(subItem, item.getQuantity().intValue()));
                         }
                     }
                 }
@@ -183,10 +183,10 @@ public class MappingService {
     }
 
     private PostSalesCreditNotesSalesCreditNoteCreditNoteLines createLine(
-            EposNowTransaction.TransactionItem i) {
+            EposNowTransaction.TransactionItem i, int parentQuantity) {
         return new PostSalesCreditNotesSalesCreditNoteCreditNoteLines()
                 .description(eposNowService.getProductDescription(i.getProductId()))
-                .quantity(i.getQuantity().abs().doubleValue())
+                .quantity(parentQuantity * i.getQuantity().abs().doubleValue())
                 .unitPrice(
                         i.getUnitPriceExcTax()
                                 .abs()
