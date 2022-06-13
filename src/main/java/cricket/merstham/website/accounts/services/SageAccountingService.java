@@ -28,6 +28,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.text.MessageFormat.format;
+import static java.util.Objects.nonNull;
 
 public class SageAccountingService {
     private static final Logger LOG = LoggerFactory.getLogger(SageAccountingService.class);
@@ -55,20 +56,22 @@ public class SageAccountingService {
         Optional<Audit> previousAuditEntry = dynamoService.getAuditLog(transaction.getBarcode());
         if (previousAuditEntry.isEmpty()) {
             if (transaction.getTotalAmount().doubleValue() > 0.00
-                    && containsInvoiceableItems(transaction)) {
+                    && containsInvoiceableItems(transaction)
+                    && nonNull(transaction.getTenders())) {
                 LOG.info(
                         "Creating Sage sales invoice artefacts for transaction {}",
                         transaction.getBarcode());
                 return createSalesInvoiceAndPayment(transaction, salesInvoicesApi, paymentsApi);
             } else if (transaction.getTotalAmount().doubleValue() < 0.00
-                    && containsRefundItems(transaction)) {
+                    && containsRefundItems(transaction)
+                    && nonNull(transaction.getTenders())) {
                 LOG.info(
                         "Creating Sage credit note artefacts for transaction {}",
                         transaction.getBarcode());
                 return createCreditNoteAndPayment(transaction, creditNotesApi, paymentsApi);
             } else {
                 LOG.warn(
-                        "Skipping transaction {} as has a zero value or no transaction items",
+                        "Skipping transaction {} as has a zero value, no transaction items or tenders",
                         transaction.getBarcode());
                 return false;
             }
