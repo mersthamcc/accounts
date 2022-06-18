@@ -38,6 +38,10 @@ variable "default_tax_rate_id" {
   description = "Default tax rate to use if no specific mapping found"
 }
 
+variable "no_tax_rate_id" {
+  description = "Tax rate to use if no VAT implication"
+}
+
 variable "epos_validate_end_of_day" {
   description = "Whether to validate the the EndOfDay webhook before processing"
   default     = true

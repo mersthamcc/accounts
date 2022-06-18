@@ -57,11 +57,7 @@ public class ProcessTransactions implements RequestHandler<SQSEvent, Void> {
                         new TokenManager(dynamoService));
         this.sageAccountingService =
                 new SageAccountingService(
-                        new MappingService(
-                                configurationService,
-                                eposNowService,
-                                dynamoService,
-                                playCricketService),
+                        new MappingService(eposNowService, dynamoService, playCricketService),
                         dynamoService,
                         sageApiClient);
     }
