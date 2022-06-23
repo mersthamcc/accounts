@@ -217,6 +217,8 @@ public class MappingService {
                 .taxAmount(
                         tax.map(EposNowTransaction.Tax::getAmount)
                                 .orElse(BigDecimal.ZERO)
+                                .abs()
+                                .setScale(2, RoundingMode.HALF_UP)
                                 .doubleValue())
                 .ledgerAccountId(
                         configuration.getMappingConfiguration().getDefaultLedgerAccountId())
@@ -244,9 +246,13 @@ public class MappingService {
                 .taxAmount(
                         tax.map(EposNowTransaction.Tax::getAmount)
                                 .orElse(BigDecimal.ZERO)
+                                .abs()
+                                .setScale(2, RoundingMode.HALF_UP)
                                 .doubleValue())
                 .ledgerAccountId(
-                        configuration.getMappingConfiguration().getDefaultLedgerAccountId())
+                        configuration
+                                .getMappingConfiguration()
+                                .getLedgerMapping(i.getProductId().longValue()))
                 .taxRateId(
                         tax.map(EposNowTransaction.Tax::getName)
                                 .map(this::mapTaxRate)
