@@ -621,7 +621,7 @@ public class EposNowTransaction {
     public static class OtherItem {
         BigInteger itemTypeId;
         String itemType;
-        BigInteger amount;
+        BigDecimal amount;
 
         @JsonProperty("ItemTypeId")
         public BigInteger getItemTypeId() {
@@ -642,11 +642,11 @@ public class EposNowTransaction {
         }
 
         @JsonProperty("Amount")
-        public BigInteger getAmount() {
+        public BigDecimal getAmount() {
             return this.amount;
         }
 
-        public void setAmount(BigInteger amount) {
+        public void setAmount(BigDecimal amount) {
             this.amount = amount;
         }
     }

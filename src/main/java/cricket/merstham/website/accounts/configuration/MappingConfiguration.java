@@ -11,6 +11,7 @@ public class MappingConfiguration {
     private String defaultCustomerId;
     private String defaultLedgerAccountId;
     private String defaultTaxRateId;
+    private String noTaxRateId;
     private List<Mapping> ledgerMapping;
     private List<Mapping> taxRateMapping;
     private List<Mapping> tenderMapping;
@@ -45,6 +46,16 @@ public class MappingConfiguration {
         return this;
     }
 
+    @DynamoDBAttribute(attributeName = "no_tax_rate_id")
+    public String getNoTaxRateId() {
+        return noTaxRateId;
+    }
+
+    public MappingConfiguration setNoTaxRateId(String noTaxRateId) {
+        this.noTaxRateId = noTaxRateId;
+        return this;
+    }
+
     @DynamoDBAttribute(attributeName = "ledger_mapping")
     public List<Mapping> getLedgerMapping() {
         return ledgerMapping;
@@ -75,27 +86,27 @@ public class MappingConfiguration {
         return this;
     }
 
-    public String getTaxRateMapping(long taxRateId) {
+    public String getTaxRateMapping(String taxRateName) {
         return taxRateMapping.stream()
-                .filter(t -> Long.parseLong(t.getEposValue()) == taxRateId)
+                .filter(t -> t.getEposValue().equals(taxRateName))
                 .findFirst()
-                .orElse(new Mapping().setSageValue(defaultTaxRateId))
-                .getSageValue();
+                .map(Mapping::getSageValue)
+                .orElse(defaultTaxRateId);
     }
 
     public String getLedgerMapping(long productCode) {
         return ledgerMapping.stream()
                 .filter(l -> Long.parseLong(l.getEposValue()) == productCode)
                 .findFirst()
-                .orElse(new Mapping().setSageValue(defaultLedgerAccountId))
-                .getSageValue();
+                .map(Mapping::getSageValue)
+                .orElse(defaultLedgerAccountId);
     }
 
     public String getTenderMapping(long tenderType) {
         return tenderMapping.stream()
                 .filter(t -> Long.parseLong(t.getEposValue()) == tenderType)
                 .findFirst()
-                .orElseThrow()
-                .getSageValue();
+                .map(Mapping::getSageValue)
+                .orElseThrow();
     }
 }

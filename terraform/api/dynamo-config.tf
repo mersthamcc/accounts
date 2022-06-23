@@ -38,6 +38,9 @@ resource "aws_dynamodb_table_item" "config" {
         "default_tax_rate_id" = {
           S = var.default_tax_rate_id
         }
+        "no_tax_rate_id" = {
+          S = var.no_tax_rate_id
+        }
         "ledger_mapping" = {
           L = var.ledger_mappings
         }
