@@ -11,7 +11,8 @@ ledger_mappings = [
   {
     M = {
       "epos_value" = {
-        S = "Sat 1st XI"
+        // Sat 1st XI
+        S = "32939873"
       }
       "sage_value" = {
         S = "50d44d46180911e691e20a5d7cf84c3e"
@@ -21,7 +22,8 @@ ledger_mappings = [
   {
     M = {
       "epos_value" = {
-        S = "Sat 2nd XI"
+        // Sat 2nd XI
+        S = "32939877"
       }
       "sage_value" = {
         S = "50d44e4b180911e691e20a5d7cf84c3e"
@@ -31,7 +33,8 @@ ledger_mappings = [
   {
     M = {
       "epos_value" = {
-        S = "Sat 3rd XI"
+        // Sat 3rd XI
+        S = "33015677"
       }
       "sage_value" = {
         S = "50d44f42180911e691e20a5d7cf84c3e"
@@ -41,7 +44,8 @@ ledger_mappings = [
   {
     M = {
       "epos_value" = {
-        S = "Sat 4th XI"
+        // Sat 4th XI
+        S = "33015682"
       }
       "sage_value" = {
         S = "50d4512d180911e691e20a5d7cf84c3e"
@@ -51,7 +55,8 @@ ledger_mappings = [
   {
     M = {
       "epos_value" = {
-        S = "Sun 1st XI"
+        // Sun 1st/Dev XI
+        S = "33015693"
       }
       "sage_value" = {
         S = "50d45230180911e691e20a5d7cf84c3e"
@@ -61,7 +66,8 @@ ledger_mappings = [
   {
     M = {
       "epos_value" = {
-        S = "Sun 2nd XI"
+        // Sun 2nd XI
+        S = "33015695"
       }
       "sage_value" = {
         S = "50d4532a180911e691e20a5d7cf84c3e"

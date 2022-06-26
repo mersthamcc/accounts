@@ -11,7 +11,8 @@ ledger_mappings = [
   {
     M = {
       "epos_value" = {
-        S = "Sat 1st XI"
+        // Sat 1st XI
+        S = "32939873"
       }
       "sage_value" = {
         S = "9ab66927180811e691e20a5d7cf84c3e"
@@ -21,7 +22,8 @@ ledger_mappings = [
   {
     M = {
       "epos_value" = {
-        S = "Sat 2nd XI"
+        // Sat 2nd XI
+        S = "32939877"
       }
       "sage_value" = {
         S = "9ab66a34180811e691e20a5d7cf84c3e"
@@ -31,7 +33,8 @@ ledger_mappings = [
   {
     M = {
       "epos_value" = {
-        S = "Sat 3rd XI"
+        // Sat 3rd XI
+        S = "33015677"
       }
       "sage_value" = {
         S = "9ab66ecc180811e691e20a5d7cf84c3e"
@@ -41,7 +44,8 @@ ledger_mappings = [
   {
     M = {
       "epos_value" = {
-        S = "Sat 4th XI"
+        // Sat 4th XI
+        S = "33015682"
       }
       "sage_value" = {
         S = "9ab66fdf180811e691e20a5d7cf84c3e"
@@ -51,7 +55,8 @@ ledger_mappings = [
   {
     M = {
       "epos_value" = {
-        S = "Sun 1st XI"
+        // Sun 1st/Dev XI
+        S = "33015693"
       }
       "sage_value" = {
         S = "9ab6779f180811e691e20a5d7cf84c3e"
@@ -61,7 +66,8 @@ ledger_mappings = [
   {
     M = {
       "epos_value" = {
-        S = "Sun 2nd XI"
+        // Sun 2nd XI
+        S = "33015695"
       }
       "sage_value" = {
         S = "9ab6734f180811e691e20a5d7cf84c3e"
@@ -71,10 +77,22 @@ ledger_mappings = [
   {
     M = {
       "epos_value" = {
-        S = "100 Club Membership (Annual)"
+        // 100 Club Membership (Annual)
+        S = "42161302"
       }
       "sage_value" = {
         S = "ecb24610d47840f79bc2bf8ae56160fa"
+      }
+    }
+  },
+  {
+    M = {
+      "epos_value" = {
+        // Feathers Training Top
+        S = "42976258"
+      }
+      "sage_value" = {
+        S = "9ab664ea180811e691e20a5d7cf84c3e"
       }
     }
   }
